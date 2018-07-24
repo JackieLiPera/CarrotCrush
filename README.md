@@ -23,6 +23,9 @@ In addition:
 This app will consist of a single screen with game board and nav links to the Github, my LinkedIn, and the About modal.
 Game controls will include a Restart button.
 
+![](https://i.imgur.com/mly6rzV.jpg)
+
+
 # Architechture and Technologies 
 
 * Javascript 
