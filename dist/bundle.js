@@ -101,31 +101,35 @@ __webpack_require__.r(__webpack_exports__);
 const icons = {
   carrot: './images/carrot.ico',
   tomato: './images/tomato.png',
-  cucumber: './images/cucumber.jpg',
+  cucumber: './images/cucumber.png',
   potato: './images/potato.png',
   raddish: './images/raddish.png',
   broccoli: './images/broccoli.png'
 }
 
+
 class Board {
   constructor(ctx) {
     this.icons = icons;
     this.ctx = ctx;
-    this.grid = new Array(6).fill(new Array(6))
+    this.grid = new Array(6);
+    for (let i = 0; i < this.grid.length; i ++) {
+      this.grid[i] = (new Array(6))
+    }
     this.populate = this.populate.bind(this);
     this.findTrios = this.findTrios.bind(this);
     this.populate()
     this.findTrios();
   }
 
+
   populate() {
     for (let i = 0; i < this.grid.length; i++) {
       for (let j = 0; j < this.grid.length; j++) {
         this.grid[i][j] = new _veggie__WEBPACK_IMPORTED_MODULE_0__["default"]();
       }
-
-      return this.grid;
     }
+    return this.grid
   }
 
   findTrios() {
@@ -206,25 +210,28 @@ class Board {
 
 
   draw(ctx) {
-    let img = new Image();
-    let xpos = 0;
-    let ypos = 0;
-
+    let images = [];
     for(let i = 0; i < this.grid.length; i++) {
-      for(let j = 0; j < this.grid.length; j++) {
+      for(let j = 0; j < this.grid[i].length; j++) {
+        let img = new Image();
         let veggieType = this.grid[i][j].type;
         let source =  this.icons[veggieType];
-        let image = img.src = source;
-        xpos += 50;
-        ypos += 50;
-        img.addEventListener('load', function() {
-          ctx.drawImage(img, 0, 0, 50, 50);
-        }, false);
+        img.xpos = (i * 80);
+        img.ypos = (j * 80);
+        img.src = source;
+        images.push(img)
       }
-    }
-  }
 
+    }
+
+    images.forEach( (image) => {
+      image.onload = function() {
+        ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
+      }
+    });
+  }
 }
+
 
 /* harmony default export */ __webpack_exports__["default"] = (Board);
 
@@ -319,7 +326,7 @@ class GameView {
   }
 
   start() {
-    this.board.draw(this.ctx)
+    this.board.draw(this.ctx);
   }
 }
 
@@ -349,8 +356,6 @@ const DEFAULT = {
 
 class Veggie {
   constructor() {
-    this.width = 50;
-    this.height = 50;
     this.type = DEFAULT.TYPE[Math.floor(Math.random() * DEFAULT.TYPE.length)];
   }
 }
