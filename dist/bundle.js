@@ -116,10 +116,10 @@ class Board {
         this.grid[i] = (new Array(6))
       }
     this.populate()
-    this.shake = this.shake.bind(this);
     this.populate = this.populate.bind(this);
     this.moveVeggie = this.moveVeggie.bind(this);
     this.isValidMove = this.isValidMove.bind(this);
+    this.draw = this.draw.bind(this);
   }
 
 
@@ -152,24 +152,18 @@ class Board {
         ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
       }
     });
-  }
 
-  shake(ctx){
-    ctx.save();
-    let dx = Math.random()*10;
-    let dy = Math.random()*10;
-    ctx.translate(dx, dy);
-    ctx.restore();
-  }
 
+  }
 
   moveVeggie(fromMove, toMove) {
     if (this.isValidMove(fromMove, toMove) === true) {
       let firstVeg = this.grid[fromMove[0]][fromMove[1]];
       let secondVeg = this.grid[toMove[0]][toMove[1]];
-      debugger
+
       this.grid[toMove[0]][toMove[1]] = firstVeg;
       this.grid[fromMove[0]][fromMove[1]] = secondVeg;
+      this.draw(this.ctx);
     } else {
       console.log('Invalid move')
       this.shake();
@@ -225,8 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const canvasEl = document.getElementsByTagName("canvas")[0];
 
   const ctx = canvasEl.getContext("2d");
-  const game = new _game__WEBPACK_IMPORTED_MODULE_0__["default"]();
-  new _game_view__WEBPACK_IMPORTED_MODULE_1__["default"](game, ctx).start();
+  new _game_view__WEBPACK_IMPORTED_MODULE_1__["default"](ctx).start();
 });
 
 
@@ -246,11 +239,11 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class Game {
-  constructor() {
+  constructor(board) {
     this.points = 0;
     this.maxPoints = 1000;
     this.maxMoves = 10;
-    this.board = new _board__WEBPACK_IMPORTED_MODULE_0__["default"]();
+    this.board = board;
     this.won = false;
     this.prevMove = null;
 
@@ -303,7 +296,6 @@ class Game {
       pos.push(5);
     };
 
-
     return pos;
   }
 
@@ -341,13 +333,15 @@ class Game {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _board__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./board */ "./lib/board.js");
+/* harmony import */ var _game__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game */ "./lib/game.js");
+
 
 
 class GameView {
-  constructor(game, ctx) {
+  constructor(ctx) {
     this.ctx = ctx;
-    this.game = game;
-    this.board = new _board__WEBPACK_IMPORTED_MODULE_0__["default"]();
+    this.board = new _board__WEBPACK_IMPORTED_MODULE_0__["default"](ctx);
+    this.game = new _game__WEBPACK_IMPORTED_MODULE_1__["default"](this.board);
   }
 
   start() {
