@@ -107,18 +107,19 @@ const icons = {
   broccoli: './images/broccoli.png'
 }
 
-
 class Board {
   constructor(ctx) {
     this.icons = icons;
     this.ctx = ctx;
     this.grid = new Array(6);
-    for (let i = 0; i < this.grid.length; i ++) {
-      this.grid[i] = (new Array(6))
-    }
-    this.populate = this.populate.bind(this);
-    this.findTrios = this.findTrios.bind(this);
+      for (let i = 0; i < this.grid.length; i ++) {
+        this.grid[i] = (new Array(6))
+      }
     this.populate()
+    this.shake = this.shake.bind(this);
+    this.populate = this.populate.bind(this);
+    this.moveVeggie = this.moveVeggie.bind(this);
+    this.isValidMove = this.isValidMove.bind(this);
   }
 
 
@@ -130,83 +131,6 @@ class Board {
     }
     return this.grid
   }
-  // 
-  // findTrios() {
-  //   let trios = [];
-  //
-  //   //horizontal check
-  //   for (let i = 0; i < this.grid.length; i++) {
-  //     let vegCount = 1;
-  //     for (let j = 0; j < this.grid.length; j++) {
-  //         let checked = false;
-  //
-  //         if (i === this.grid.length - 1) {
-  //           checked = true;
-  //         } else {
-  //             if (this.grid[i][j].type === this.grid[i+1][j].type &&
-  //               this.grid[i][j].type !== -1) {
-  //               vegCount += 1;
-  //             } else {
-  //               checked = true;
-  //             }
-  //         }
-  //
-  //         if (checked) {
-  //             if (vegCount >= 3) {
-  //                 trios.push({ column: i+1-vegCount, row:j,
-  //                             length: vegCount, horizontal: true });
-  //             }
-  //             vegCount = 1;
-  //         }
-  //     }
-  //   }
-  //
-  //   //vertical check
-  //   for (let i = 0 ; i < this.grid.length; i++) {
-  //     let vegCount = 1;
-  //     for (let j = 0; j < this.grid.length; j++) {
-  //       let checked = false;
-  //
-  //       if (j === this.grid.length - 1) {
-  //         checked = true;
-  //       } else {
-  //         if (this.grid[i][j].type === this.grid[i][j + 1].type &&
-  //           this.grid[i][j].type !== -1) {
-  //           vegCount += 1;
-  //         } else {
-  //           checked = true;
-  //         }
-  //       }
-  //
-  //       if (checked) {
-  //         if (vegCount >= 3) {
-  //           trios.push({ column: i, row: j + 1 - vegCount,
-  //                         length: vegCount, horizontal: false });
-  //         }
-  //
-  //         vegCount = 1;
-  //       }
-  //     }
-  //   }
-  //
-  //   return trios;
-  // }
-
-  // reorganizeBoard() {
-  //   let numTrios = (this.grid.findTrios()).length;
-  //   while (numTrios > 1) {
-  //     this.grid.removeTrios();
-  //     this.grid.reshuffle();
-  //     this.grid.findTrios();
-  //   };
-  //
-  //   return this.grid;
-  // }
-  //
-  // numValidMoves() {
-  //
-  // }
-
 
   draw(ctx) {
     let images = [];
@@ -229,6 +153,52 @@ class Board {
       }
     });
   }
+
+  shake(ctx){
+    ctx.save();
+    let dx = Math.random()*10;
+    let dy = Math.random()*10;
+    ctx.translate(dx, dy);
+    ctx.restore();
+  }
+
+
+  moveVeggie(fromMove, toMove) {
+    if (this.isValidMove(fromMove, toMove) === true) {
+      let firstVeg = this.grid[fromMove[0]][fromMove[1]];
+      let secondVeg = this.grid[toMove[0]][toMove[1]];
+      debugger
+      this.grid[toMove[0]][toMove[1]] = firstVeg;
+      this.grid[fromMove[0]][fromMove[1]] = secondVeg;
+    } else {
+      console.log('Invalid move')
+      this.shake();
+    }
+  }
+
+  isValidMove(fromMove, toMove) {
+    let xPos1 = fromMove[0];
+    let xPos2 = toMove[0];
+    let yPos1 = fromMove[1];
+    let yPos2 = toMove[1];
+
+    if ((xPos1 === 0) && (xPos2 !== 0 && xPos2 !== 1)) {
+      return false;
+    } else if ((xPos1 === this.grid.length) && (xPos2 !== xPos1 - 1) && (xPos2 !== this.grid.length)) {
+      return false;
+    } else if ((yPos1 === 0) && (yPos2 !== yPos1 + 1) && (yPos2 !== 0)) {
+      return false;
+    } else if ((yPos1 === this.grid.length) && (yPos2 !== yPos1 - 1) && (yPos2 !== this.grid.length)) {
+      return false;
+    } else if ((xPos2 < (xPos1 - 1)) || (xPos2 > xPos1 + 1)) {
+      return false;
+    } else if ((yPos2 < yPos1 - 1) || (yPos2 > yPos1 + 1)) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
 }
 
 
@@ -259,8 +229,6 @@ document.addEventListener("DOMContentLoaded", () => {
   new _game_view__WEBPACK_IMPORTED_MODULE_1__["default"](game, ctx).start();
 });
 
-window.findtrios = findTrios;
-
 
 /***/ }),
 
@@ -283,19 +251,77 @@ class Game {
     this.maxPoints = 1000;
     this.maxMoves = 10;
     this.board = new _board__WEBPACK_IMPORTED_MODULE_0__["default"]();
-    this.won = null;
+    this.won = false;
+    this.prevMove = null;
+
+    this.play = this.play.bind(this);
+    this.getMove = this.getMove.bind(this);
+    this.handleMove = this.handleMove.bind(this);
+    this.winner = this.winner.bind(this);
+
+    $("#canvas").on('click', this.handleMove);
   }
 
   play() {
-    this.board.populate();
+    while (this.won === false) {
+      this.won = true;
+    }
+
+    this.winner();
   }
 
-  won() {
-    if (this.points >= this.maxPoints) {
-      this.woon = true;
+  getMove(e) {
+    let x = e.offsetX;
+    let y = e.offsetY;
+
+    let pos = [];
+    if (y > 0 && y < 80) {
+      pos.push(0)
+    } else if (y >= 80 && y < 160) {
+      pos.push(1);
+    } else if (y >= 160 && y < 240) {
+      pos.push(2);
+    } else if (y >= 240 && y < 320) {
+      pos.push(3);
+    } else if (y >= 320 && y < 400) {
+      pos.push(4);
+    } else {
+      pos.push(5);
+    };
+
+    if (x > 0 && x < 80) {
+      pos.push(0)
+    } else if (x >= 80 && x < 160) {
+      pos.push(1);
+    } else if (x >= 160 && x < 240) {
+      pos.push(2);
+    } else if (x >= 240 && x < 320) {
+      pos.push(3);
+    } else if (x >= 320 && x < 400) {
+      pos.push(4);
+    } else {
+      pos.push(5);
+    };
+
+
+    return pos;
+  }
+
+  handleMove (e) {
+    if (this.prevMove) {
+      let fromMove = this.prevMove;
+      let toMove = this.getMove(e);
+      this.board.moveVeggie(fromMove, toMove);
+      this.prevMove = false;
+    } else {
+      this.prevMove = this.getMove(e);
     }
   }
 
+
+  winner() {
+    console.log('You won');
+  }
 
 }
 
@@ -326,6 +352,7 @@ class GameView {
 
   start() {
     this.board.draw(this.ctx);
+    this.game.play();
   }
 }
 
