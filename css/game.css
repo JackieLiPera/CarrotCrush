@@ -1,0 +1,35 @@
+.game-background {
+  background-image: url('../images/background.png');
+  height: 1000px;
+  background-size: cover;
+}
+
+.score-bar {
+  border: 1px solid black;
+  height: 125px;
+  border-radius: 5px;
+  margin-bottom: 50px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background: ;
+  background-image: linear-gradient(to right, #FFB6C1 0%, #f5d2d7 100%);
+}
+
+.player-score, .target-score {
+  border: 1px solid black;
+  height: 75px;
+  width: 400px;
+  margin: 15px;
+  border-radius: 5px;
+  background: white;
+}
+
+.moves-left {
+  border: 1px solid black;
+  height: 100px;
+  width: 170px;
+  border-radius: 160px;
+  background: white;
+}
