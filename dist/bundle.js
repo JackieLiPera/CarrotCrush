@@ -106,7 +106,8 @@ const icons = {
   cucumber: './images/cucumber.png',
   potato: './images/potato.png',
   raddish: './images/raddish.png',
-  broccoli: './images/broccoli.png'
+  broccoli: './images/broccoli.png',
+  null: './images/null.png'
 }
 
 class Board {
@@ -133,7 +134,6 @@ class Board {
   }
 
   draw(ctx) {
-    ctx.clearRect(0, 0, 480, 480)
     let images = [];
     for(let i = 0; i < this.grid.length; i++) {
       for(let j = 0; j < this.grid[i].length; j++) {
@@ -150,7 +150,10 @@ class Board {
     let numImages = 0;
     images.forEach( (image) => {
       image.onload = () => {
+        ctx.save();
+        ctx.clearRect(image.xpos, image.ypos, 80, 80);
         ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
+        ctx.restore();
 
         numImages++;
         if (numImages === 36) {
@@ -229,9 +232,10 @@ class Board {
         if (checked) {
           currentStreak = [];
           score += (horizontalStreaks.length * 50);
+          this.score += score;
           if (horizontalStreaks.length > 0) {
-            debugger
             this.eliminateStreaks(horizontalStreaks);
+            horizontalStreaks = [];
           }
         }
       }
@@ -265,15 +269,16 @@ class Board {
         if (checked) {
           currentStreak = [];
           score += (verticalStreaks.length * 50);
+          this.score += score;
           if (verticalStreaks.length > 0) {
             debugger
             this.eliminateStreaks(verticalStreaks);
+            verticalStreaks = [];
           }
         }
       }
     }
 
-    this.score = score;
   }
 
 
@@ -281,23 +286,26 @@ class Board {
     if (streaks.length === 0){
       return null;
     }
-    debugger
+
+
     streaks.forEach ((streak) => {
+      debugger
       for (let i = 0; i < streak.length; i++) {
         let row = streak[i]
 
         this.grid[row[0]].splice(row[1], 1);
         this.grid[row[0]].unshift(new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]());
-        this.draw(this.ctx);
       }
 
       for (let i = 0; i < streak.length; i++) {
         let row = streak[i];
-        this.grid[row[0]][0] = new _veggie__WEBPACK_IMPORTED_MODULE_0__["default"]();
+        this.grid[row[0]][row[1]] = (new _veggie__WEBPACK_IMPORTED_MODULE_0__["default"]());
+        debugger
       }
-    });
 
-    this.checkForStreaks();
+      this.draw(this.ctx);
+      debugger
+    });
   }
 }
 
@@ -366,17 +374,21 @@ __webpack_require__.r(__webpack_exports__);
 
 class Game {
   constructor(board) {
+    this.score = 0;
     this.objectiveScore = 1000;
     this.movesLeft = 10;
     this.board = board;
     this.won = false;
     this.prevMove = null;
+
     this.getMove = this.getMove.bind(this);
+    this.play = this.play.bind(this);
+    this.handleMove = this.handleMove.bind(this);
 
     $("#canvas").on('click', this.handleMove);
+    $(".player-score").text(this.score);
     $(".target-score").text(`Target: ${this.objectiveScore}`);
     $(".moves-left").text(`${this.movesLeft}`);
-    $(".player-score").text(this.board.score);
   }
 
   play() {
