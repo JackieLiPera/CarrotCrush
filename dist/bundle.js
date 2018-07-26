@@ -116,10 +116,12 @@ class Board {
         this.grid[i] = (new Array(6))
       }
     this.populate();
+    this.score = 0;
     this.populate = this.populate.bind(this);
     this.moveVeggie = this.moveVeggie.bind(this);
     this.isValidMove = this.isValidMove.bind(this);
-    this.checkForStreak = this.checkForStreak.bind(this);
+    this.checkForStreaks = this.checkForStreaks.bind(this);
+    this.eliminateStreaks = this.eliminateStreaks.bind(this);
     this.draw = this.draw.bind(this);
   }
 
@@ -130,7 +132,8 @@ class Board {
         this.grid[i][j] = new _veggie__WEBPACK_IMPORTED_MODULE_0__["default"]();
       }
     }
-    return this.grid
+
+    return this.grid;
   }
 
   draw(ctx) {
@@ -146,15 +149,21 @@ class Board {
         img.src = source;
         images.push(img)
       }
-
     }
 
+    let numImages = 0;
     images.forEach( (image) => {
-      image.onload = function() {
+      image.onload = () => {
         ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
+
+        numImages += 1;
+        if (numImages === 36) {
+          this.checkForStreaks();
+        }
       }
     });
   }
+
 
   moveVeggie(fromMove, toMove) {
     if (this.isValidMove(fromMove, toMove) === true) {
@@ -165,7 +174,7 @@ class Board {
       this.grid[fromMove[0]][fromMove[1]] = secondVeg;
       this.draw(this.ctx);
     } else {
-      console.log('Invalid move')
+      alert('Invalid move') // change this - create a shake animation?
     }
   }
 
@@ -192,39 +201,103 @@ class Board {
     }
   }
 
-  checkForStreak() {
+  checkForStreaks() {
     let currentStreak = [];
+    let horizontalStreaks = [];
+    let verticalStreaks = [];
+    let score = 0;
 
-  //horizontal check
+    //horizontal check
     for (let i = 0; i < this.grid.length; i++) {
-      for (let j = 0; j < this.grid.length; j++) {
+      for (let j = 1; j < this.grid.length; j++) {
         let checked = false;
 
-        if (j !== this.grid.length -1) {
-          currentStreak.push([i,j]);
+
+        if (currentStreak.length === 0) {
+          currentStreak.push([(j - 1), i]);
         }
 
         if (j === this.grid.length - 1) {
           checked = true;
+        } else if (this.grid[j][i].type === this.grid[(j - 1)][i].type) {
+          currentStreak.push([j, i])
         } else {
-          if (this.grid[i][j].type === this.grid[i+1][j].type) {
-            currentStreak.push([(i+1), j])
-            checked = false;
-          } else {
+          if (this.grid[j][i].type !== this.grid[(j - 1)][i].type) {
+            if (currentStreak.length >= 3) {
+              horizontalStreaks.push(currentStreak);
+            }
+
             currentStreak = [];
             checked = false;
           }
         }
 
         if (checked) {
-          if (currentStreak.length >= 3) {
-            this.score += 100;
-            // eliminate the streak
+          currentStreak = [];
+          score += (horizontalStreaks.length * 50);
+          this.eliminateStreaks(horizontalStreaks);
+        }
+      }
+    }
+
+    //vertical check
+    for (let i = 0 ; i < this.grid.length; i++) {
+      for (let j = 1; j < this.grid.length; j++) {
+        let checked = false;
+
+        if (currentStreak.length === 0) {
+          currentStreak.push([i, (j - 1)]);
+        }
+
+        if (j === this.grid.length - 1) {
+          checked = true;
+        } else if (this.grid[i][j].type === this.grid[i][(j - 1)].type){
+          currentStreak.push([i, j]);
+        } else {
+          if (this.grid[i][j].type !== this.grid[i][(j - 1)].type) {
+            if (currentStreak.length >= 3) {
+              verticalStreaks.push(currentStreak);
+            }
+
+            currentStreak = [];
+            checked = false;
           }
+        }
+
+        if (checked) {
+          currentStreak = [];
+          score += (verticalStreaks.length * 50);
+          this.eliminateStreaks(verticalStreaks);
         }
       }
     }
   }
+
+
+  eliminateStreaks(streaks) {
+    if (streaks.length === 0){
+      return null;
+    }
+
+
+    streaks.forEach ((streak) => {
+      for (let i = 0; i < streak.length; i++) {
+        let row = streak[i]
+
+        this.grid[row[0]].splice(row[1], 1);
+        this.grid[row[0]].unshift(null);
+        // at this position - plug in an empty space class object
+      }
+
+      for (let i = 0; i < streak.length; i++) {
+        let row = streak[i]
+        this.grid[row[0]][0] = (new _veggie__WEBPACK_IMPORTED_MODULE_0__["default"]());
+      }
+    });
+
+    this.checkForStreaks();
+  }
+
 
 }
 
@@ -284,6 +357,7 @@ class Game {
     this.getMove = this.getMove.bind(this);
     this.handleMove = this.handleMove.bind(this);
     this.winner = this.winner.bind(this);
+
 
     $("#canvas").on('click', this.handleMove);
     $(".player-score").text(this.score);
@@ -345,7 +419,7 @@ class Game {
       this.prevMove = this.getMove(e);
     }
   }
-  
+
   winner() {
     console.log('You won');
   }
