@@ -96,6 +96,8 @@
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _veggie__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./veggie */ "./lib/veggie.js");
+/* harmony import */ var _empty_space__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./empty_space */ "./lib/empty_space.js");
+
 
 
 const icons = {
@@ -117,12 +119,6 @@ class Board {
       }
     this.populate();
     this.score = 0;
-    this.populate = this.populate.bind(this);
-    this.moveVeggie = this.moveVeggie.bind(this);
-    this.isValidMove = this.isValidMove.bind(this);
-    this.checkForStreaks = this.checkForStreaks.bind(this);
-    this.eliminateStreaks = this.eliminateStreaks.bind(this);
-    this.draw = this.draw.bind(this);
   }
 
 
@@ -156,14 +152,13 @@ class Board {
       image.onload = () => {
         ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
 
-        numImages += 1;
+        numImages++;
         if (numImages === 36) {
           this.checkForStreaks();
         }
-      }
-    });
+      };
+    })
   }
-
 
   moveVeggie(fromMove, toMove) {
     if (this.isValidMove(fromMove, toMove) === true) {
@@ -212,7 +207,6 @@ class Board {
       for (let j = 1; j < this.grid.length; j++) {
         let checked = false;
 
-
         if (currentStreak.length === 0) {
           currentStreak.push([(j - 1), i]);
         }
@@ -235,9 +229,13 @@ class Board {
         if (checked) {
           currentStreak = [];
           score += (horizontalStreaks.length * 50);
-          this.eliminateStreaks(horizontalStreaks);
+          if (horizontalStreaks.length > 0) {
+            debugger
+            this.eliminateStreaks(horizontalStreaks);
+          }
         }
       }
+
     }
 
     //vertical check
@@ -267,10 +265,15 @@ class Board {
         if (checked) {
           currentStreak = [];
           score += (verticalStreaks.length * 50);
-          this.eliminateStreaks(verticalStreaks);
+          if (verticalStreaks.length > 0) {
+            debugger
+            this.eliminateStreaks(verticalStreaks);
+          }
         }
       }
     }
+
+    this.score = score;
   }
 
 
@@ -278,27 +281,24 @@ class Board {
     if (streaks.length === 0){
       return null;
     }
-
-
+    debugger
     streaks.forEach ((streak) => {
       for (let i = 0; i < streak.length; i++) {
         let row = streak[i]
 
         this.grid[row[0]].splice(row[1], 1);
-        this.grid[row[0]].unshift(null);
-        // at this position - plug in an empty space class object
+        this.grid[row[0]].unshift(new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]());
+        this.draw(this.ctx);
       }
 
       for (let i = 0; i < streak.length; i++) {
-        let row = streak[i]
-        this.grid[row[0]][0] = (new _veggie__WEBPACK_IMPORTED_MODULE_0__["default"]());
+        let row = streak[i];
+        this.grid[row[0]][0] = new _veggie__WEBPACK_IMPORTED_MODULE_0__["default"]();
       }
     });
 
     this.checkForStreaks();
   }
-
-
 }
 
 
@@ -331,6 +331,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /***/ }),
 
+/***/ "./lib/empty_space.js":
+/*!****************************!*\
+  !*** ./lib/empty_space.js ***!
+  \****************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+class EmptySpace {
+  constructor() {
+    this.type = 'null';
+  }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (EmptySpace);
+
+
+/***/ }),
+
 /***/ "./lib/game.js":
 /*!*********************!*\
   !*** ./lib/game.js ***!
@@ -346,23 +366,17 @@ __webpack_require__.r(__webpack_exports__);
 
 class Game {
   constructor(board) {
-    this.score = 0;
     this.objectiveScore = 1000;
     this.movesLeft = 10;
     this.board = board;
     this.won = false;
     this.prevMove = null;
-
-    this.play = this.play.bind(this);
     this.getMove = this.getMove.bind(this);
-    this.handleMove = this.handleMove.bind(this);
-    this.winner = this.winner.bind(this);
-
 
     $("#canvas").on('click', this.handleMove);
-    $(".player-score").text(this.score);
     $(".target-score").text(`Target: ${this.objectiveScore}`);
     $(".moves-left").text(`${this.movesLeft}`);
+    $(".player-score").text(this.board.score);
   }
 
   play() {

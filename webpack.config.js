@@ -1,7 +1,10 @@
+const path = require('path')
+
 module.exports = {
   entry: "./lib/carrotcrush.js",
   output: {
-  	filename: "./bundle.js"
+    path: path.resolve(__dirname, 'dist'),
+  	filename: "bundle.js"
   },
   devtool: 'source-map',
 };
