@@ -287,8 +287,8 @@ class Game {
 
     $("#canvas").on('click', this.handleMove);
     $(".player-score").text(this.score);
-    $(".target-score").text(this.objectiveScore);
-    $(".moves-left").text(this.movesLeft);
+    $(".target-score").text(`Target: ${this.objectiveScore}`);
+    $(".moves-left").text(`${this.movesLeft}`);
   }
 
   play() {
@@ -345,8 +345,7 @@ class Game {
       this.prevMove = this.getMove(e);
     }
   }
-
-
+  
   winner() {
     console.log('You won');
   }

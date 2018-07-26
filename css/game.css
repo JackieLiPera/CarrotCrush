@@ -12,7 +12,7 @@
   height: 125px;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
-  margin-bottom: 50px;
+  margin-bottom: 80px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -35,10 +35,11 @@
   margin-top: 20px;
   font-family: 'Pacifico', cursive;
   font-size: 36px;
+  letter-spacing: 1px;
 }
 
 .moves-left {
-  height: 100px;
+  height: 115px;
   width: 170px;
   background: white;
   text-align: center;
@@ -49,6 +50,5 @@
   border: 1px solid #ffffffb8;
   background: #F5D2D7;
   font-family: 'Pacifico', cursive;
-  font-size: 36px;
-
+  font-size: 50px;
 }
