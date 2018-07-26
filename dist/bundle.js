@@ -115,10 +115,11 @@ class Board {
       for (let i = 0; i < this.grid.length; i ++) {
         this.grid[i] = (new Array(6))
       }
-    this.populate()
+    this.populate();
     this.populate = this.populate.bind(this);
     this.moveVeggie = this.moveVeggie.bind(this);
     this.isValidMove = this.isValidMove.bind(this);
+    this.checkForStreak = this.checkForStreak.bind(this);
     this.draw = this.draw.bind(this);
   }
 
@@ -133,6 +134,7 @@ class Board {
   }
 
   draw(ctx) {
+    ctx.clearRect(0, 0, 480, 480)
     let images = [];
     for(let i = 0; i < this.grid.length; i++) {
       for(let j = 0; j < this.grid[i].length; j++) {
@@ -152,8 +154,6 @@ class Board {
         ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
       }
     });
-
-
   }
 
   moveVeggie(fromMove, toMove) {
@@ -166,7 +166,6 @@ class Board {
       this.draw(this.ctx);
     } else {
       console.log('Invalid move')
-      this.shake();
     }
   }
 
@@ -190,6 +189,40 @@ class Board {
       return false;
     } else {
       return true;
+    }
+  }
+
+  checkForStreak() {
+    let currentStreak = [];
+
+  //horizontal check
+    for (let i = 0; i < this.grid.length; i++) {
+      for (let j = 0; j < this.grid.length; j++) {
+        let checked = false;
+
+        if (j !== this.grid.length -1) {
+          currentStreak.push([i,j]);
+        }
+
+        if (j === this.grid.length - 1) {
+          checked = true;
+        } else {
+          if (this.grid[i][j].type === this.grid[i+1][j].type) {
+            currentStreak.push([(i+1), j])
+            checked = false;
+          } else {
+            currentStreak = [];
+            checked = false;
+          }
+        }
+
+        if (checked) {
+          if (currentStreak.length >= 3) {
+            this.score += 100;
+            // eliminate the streak
+          }
+        }
+      }
     }
   }
 
@@ -240,9 +273,9 @@ __webpack_require__.r(__webpack_exports__);
 
 class Game {
   constructor(board) {
-    this.points = 0;
-    this.maxPoints = 1000;
-    this.maxMoves = 10;
+    this.score = 0;
+    this.objectiveScore = 1000;
+    this.movesLeft = 10;
     this.board = board;
     this.won = false;
     this.prevMove = null;
@@ -253,6 +286,9 @@ class Game {
     this.winner = this.winner.bind(this);
 
     $("#canvas").on('click', this.handleMove);
+    $(".player-score").text(this.score);
+    $(".target-score").text(this.objectiveScore);
+    $(".moves-left").text(this.movesLeft);
   }
 
   play() {
@@ -264,8 +300,8 @@ class Game {
   }
 
   getMove(e) {
-    let x = e.offsetX;
-    let y = e.offsetY;
+    let y = e.offsetX;
+    let x = e.offsetY;
 
     let pos = [];
     if (y > 0 && y < 80) {
