@@ -123,11 +123,6 @@ class Board {
     this.score = 0;
     this.fromMove = null;
     this.toMove = null;
-    // this.swap = this.swap.bind(this);
-    this.x1 = null;
-    this.y1 = null;
-    this.x2 = null;
-    this.y2 = null;
   }
 
   transpose(array) {
@@ -146,19 +141,17 @@ class Board {
 
   moveFruit(fromMove, toMove) {
     if (this.isValidMove(fromMove, toMove) === true) {
-      this.fromMove = fromMove;
-      this.toMove = toMove;
-      this.x1 = (fromMove[0] * 80);
-      this.y1 = (fromMove[1] * 80);
-      this.x2 = (toMove[0] * 80);
-      this.y2 = (toMove[1] * 80);
-
       let firstVeg = this.grid[fromMove[0]][fromMove[1]];
       let secondVeg = this.grid[toMove[0]][toMove[1]];
-      // requestAnimationFrame(this.swap(this.x1, this.x2, this.y1, this.y2));
       this.grid[toMove[0]][toMove[1]] = firstVeg;
       this.grid[fromMove[0]][fromMove[1]] = secondVeg;
-      this.renderWithCheck(this.ctx);
+
+      if (this.checkForStreak() === true) {
+        this.renderWithCheck(this.ctx);
+      } else {
+        this.grid[toMove[0]][toMove[1]] = secondVeg;
+        this.grid[fromMove[0]][fromMove[1]] = firstVeg;
+      }
     } else {
       alert('Invalid move') // change this - create a shake animation?
     }
@@ -187,11 +180,31 @@ class Board {
     }
   }
 
-  checkForStreaks() {
-    this.verticalCheck(this.grid);
+  checkForStreak() {
+    let check1 = this.verticalCheck(this.grid);
     let transGrid = this.transpose(this.grid);
-    this.horizontalCheck(transGrid);
-    $(".player-score").text(this.score);
+    let check2 = this.horizontalCheck(transGrid);
+
+
+    if (check1 || check2) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  checkBoardForStreaks() {
+    let streak;
+    if (this.verticalCheck(this.grid)) {
+      streak = this.verticalCheck(this.grid);
+      this.eliminateStreak(streak);
+    }
+
+    let transGrid = this.transpose(this.grid);
+    if (this.horizontalCheck(transGrid)) {
+      streak = this.horizontalCheck(transGrid);
+      this.eliminateStreak(streak);
+    }
   }
 
   verticalCheck(grid) {
@@ -212,7 +225,8 @@ class Board {
 
             if (currentStreak.length >= 3) {
               this.score += 50;
-              this.eliminateStreak(currentStreak);
+              $(".player-score").text(this.score);
+              return currentStreak;
             }
 
             currentStreak = [];
@@ -223,8 +237,8 @@ class Board {
         if (j === grid.length - 1) {
           if (currentStreak.length >= 3) {
             this.score += 50;
-            this.eliminateStreak(currentStreak);
-            currentStreak = [];
+            $(".player-score").text(this.score);
+            return currentStreak;
           }
         }
       }
@@ -247,12 +261,13 @@ class Board {
           if (grid[i][j].type !== grid[i][(j - 1)].type) {
 
             if (currentStreak.length >= 3) {
-              let currentStreak2 = currentStreak.map ((pos) => {
+              let reversedStreak = currentStreak.map ((pos) => {
                 return [pos[1], pos[0]];
               });
 
               this.score += 50;
-              this.eliminateStreak(currentStreak2);
+              $(".player-score").text(this.score);
+              return reversedStreak;
             }
 
             currentStreak = [];
@@ -266,13 +281,13 @@ class Board {
 
         if (checked) {
           if (currentStreak.length >= 3) {
-            let currentStreak2 = currentStreak.map ((pos) => {
+            let reversedStreak = currentStreak.map ((pos) => {
               return [pos[1], pos[0]]
             });
 
             this.score += 50;
-            this.eliminateStreak(currentStreak2);
-            currentStreak = [];
+            $(".player-score").text(this.score);
+            return reversedStreak;
           }
         }
       }
@@ -288,8 +303,6 @@ class Board {
 
     this.renderWithCheck(this.ctx);
   }
-
-
 
   renderWithCheck(ctx) {
     let images = [];
@@ -315,7 +328,7 @@ class Board {
 
         numImages++;
         if (numImages === 36) {
-          this.checkForStreaks();
+          this.checkBoardForStreaks();
         }
       };
     });
@@ -341,7 +354,6 @@ class Board {
         ctx.restore();
       };
     });
-
   }
 
 
@@ -382,7 +394,7 @@ class Board {
   //     this.ctx.restore();
   //     requestAnimationFrame(this.swap(x1, x2, y1, y2));
   //   }
-  //   }
+  //  }
 }
 
 
@@ -479,8 +491,8 @@ __webpack_require__.r(__webpack_exports__);
 
 class Game {
   constructor(board) {
-    this.objectiveScore = 500;
-    this.movesLeft = 3;
+    this.objectiveScore = 1000;
+    this.movesLeft = 5;
     this.board = board;
     this.prevMove = null;
 
@@ -492,13 +504,15 @@ class Game {
     $(".moves-left").text(`${this.movesLeft}`);
   }
 
-  play() {}
+  play() {
+    this.handleMove;
+  }
 
   checkWon() {
     if (this.movesLeft > 0 && this.board.score >= this.objectiveScore ) {
-      alert('ya')
+      alert('yerr')
     } else if (this.movesLeft === 0 && this.board.score !== this.objectiveScore) {
-      alert('na')
+      alert('naa boi')
     } else {
       return null;
     }
@@ -547,7 +561,6 @@ class Game {
 
       this.movesLeft -= 1;
       $(".moves-left").text(`${this.movesLeft}`);
-
       this.board.moveFruit(fromMove, toMove);
       this.prevMove = false;
       this.checkWon();
