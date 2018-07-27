@@ -112,14 +112,18 @@ const icons = {
 
 class Board {
   constructor(ctx) {
+    this.grid = new Array(6);
+    for (let i = 0; i < this.grid.length; i ++) {
+      this.grid[i] = (new Array(6))
+    }
+    this.populate();
+
     this.icons = icons;
     this.ctx = ctx;
-    this.grid = new Array(6);
-      for (let i = 0; i < this.grid.length; i ++) {
-        this.grid[i] = (new Array(6))
-      }
     this.score = 0;
-    this.populate();
+    this.fromMove = null;
+    this.toMove = null;
+    this.swap = this.swap.bind(this);
   }
 
   transpose(array) {
@@ -132,18 +136,19 @@ class Board {
         this.grid[i][j] = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]();
       }
     }
-
     return this.grid;
   }
 
   moveFruit(fromMove, toMove) {
     if (this.isValidMove(fromMove, toMove) === true) {
+      this.fromMove = fromMove;
+      this.toMove = toMove;
       let firstVeg = this.grid[fromMove[0]][fromMove[1]];
       let secondVeg = this.grid[toMove[0]][toMove[1]];
 
       this.grid[toMove[0]][toMove[1]] = firstVeg;
       this.grid[fromMove[0]][fromMove[1]] = secondVeg;
-      requestAnimationFrame(this.swap(fromMove, toMove, this.ctx));
+      requestAnimationFrame(this.swap);
     } else {
       alert('Invalid move') // change this - create a shake animation?
     }
@@ -271,11 +276,11 @@ class Board {
       this.grid[row[0]].unshift(new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]());
     }
 
-    this.draw(this.ctx);
+    this.renderWithCheck(this.ctx);
   }
 
 
-  draw(ctx) {
+  renderWithCheck(ctx) {
     let images = [];
     for(let i = 0; i < this.grid.length; i++) {
       for(let j = 0; j < this.grid[i].length; j++) {
@@ -305,19 +310,70 @@ class Board {
     });
   }
 
-  swap(pos1, pos2, ctx) {
-    requestAnimationFrame(this.swap)
+  redraw(xpos, ypos, ctx) {
+    let images = [];
+    for(let i = 0; i < this.grid.length; i++) {
+      for(let j = 0; j < this.grid[i].length; j++) {
+        let img = new Image();
+        let FruitType = this.grid[i][j].type;
+        let source =  this.icons[FruitType];
+        img.src = source;
+        images.push(img)
+      }
+    }
 
-    
-    let x1 = (pos1[0] * 80);
-    let y1 = (pos1[1] * 80);
-    let x2 = (pos2[0] * 80);
-    let y2 = (pos2[1] * 80);
+    images.forEach( (image) => {
+      image.onload = () => {
+        ctx.save();
+        ctx.clearRect(xpos, ypos, 80, 80);
+        ctx.drawImage(image, xpos, ypos, 80, 80);
+        ctx.restore();
+      };
+    });
 
-    ctx.save();
+  }
 
-    ctx.restore();
-    this.draw(ctx);
+
+  swap() {
+    let x1 = (this.fromMove[0] * 80);
+    let y1 = (this.fromMove[1] * 80);
+    let x2 = (this.toMove[0] * 80);
+    let y2 = (this.toMove[1] * 80);
+
+
+    let dx;
+    if (x1 > x2) {
+      dx = -2;
+    } else if (x1 < x2) {
+      dx = 2;
+    } else {
+      dx = 0;
+    }
+
+    let dy;
+    if (y1 > y2) {
+      dy = -2;
+    } else if (y1 < y2) {
+      dy = 2;
+    } else {
+      dy = 0;
+    }
+
+    requestAnimationFrame(this.swap);
+    this.ctx.beginPath();
+    x1 += dx;
+    y1 += dy;
+    debugger
+    this.ctx.translate((dx), (dy));
+    this.redraw(x1, y1, this.ctx);
+
+      if (x1 === x2 && y1 === y2) {
+        dx = 0;
+        dy = 0;
+
+      }
+
+    this.ctx.closePath();
   }
 }
 
@@ -515,7 +571,7 @@ class GameView {
   }
 
   start() {
-    this.board.draw(this.ctx);
+    this.board.renderWithCheck(this.ctx);
     this.game.play();
   }
 }
