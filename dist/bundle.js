@@ -224,7 +224,7 @@ class Board {
           if (grid[i][j].type !== grid[i][(j - 1)].type) {
 
             if (currentStreak.length >= 3) {
-              this.eliminateVertStreak(currentStreak);
+              this.eliminateStreak(currentStreak);
             }
 
             currentStreak = [];
@@ -234,7 +234,7 @@ class Board {
 
         if (j === grid.length - 1) {
           if (currentStreak.length >= 3) {
-            this.eliminateVertStreak(currentStreak);
+            this.eliminateStreak(currentStreak);
             currentStreak = [];
           }
         }
@@ -247,7 +247,7 @@ class Board {
     let currentStreak = [];
 
     for (let i = 0 ; i < grid.length; i++) {
-      debugger
+      ""
       for (let j = 1; j < grid.length; j++) {
         let checked = false;
 
@@ -263,8 +263,8 @@ class Board {
               let currentStreak2 = currentStreak.map ((pos) => {
                 return [pos[1], pos[0]];
               });
-              debugger
-              this.eliminateHorizStreak(currentStreak2);
+
+              this.eliminateStreak(currentStreak2);
             }
 
             currentStreak = [];
@@ -282,7 +282,7 @@ class Board {
               return [pos[1], pos[0]]
             });
 
-            this.eliminateHorizStreak(currentStreak2);
+            this.eliminateStreak(currentStreak2);
             currentStreak = [];
           }
         }
@@ -290,21 +290,8 @@ class Board {
     }
   }
 
-  eliminateHorizStreak(streak) {
-    let tempGrid = this.transpose(this.grid);
-    debugger
-    for (let i = 0; i < streak.length; i++) {
-      let row = streak[i]
-      tempGrid[row[0]].splice(row[1], 1);
-      this.transpose(tempGrid);
-      tempGrid[row[1]].unshift(new _veggie__WEBPACK_IMPORTED_MODULE_0__["default"]())
-    }
 
-    this.grid = tempGrid;
-    this.draw(this.ctx);
-  }
-
-  eliminateVertStreak(streak) {
+  eliminateStreak(streak) {
     for (let i = 0; i < streak.length; i++) {
       let row = streak[i]
       this.grid[row[0]].splice(row[1], 1);
