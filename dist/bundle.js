@@ -86,6 +86,85 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./lib/animation.js":
+/*!**************************!*\
+  !*** ./lib/animation.js ***!
+  \**************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// import Board from './board';
+
+const Animation = {
+  // preShake(ctx) {
+  //   ctx.save();
+  //   let dx = Math.random() * 10;
+  //   let dy = Math.random() * 10;
+  //   ctx.translate(dx, dy);
+  // },
+  //
+  // postShake(ctx) {
+  //   ctx.restore();
+  // },
+  //
+  // shake(ctx, board) {
+  //   ctx.clearRect(0, 0, 480, 480);
+  //   Animation.preShake(ctx);
+  //   board.redraw(ctx);
+  //   Animation.postShake(ctx);
+  //   requestAnimationFrame(Animation.shake(ctx, board));
+  // },
+
+
+  swap(x1, x2, y1, y2, ctx, board) {
+    return  () => {
+      let dx;
+      if (x1 > x2) {
+        dx = -2;
+      } else if (x1 < x2) {
+        dx = 2;
+      } else {
+        dx = 0;
+      }
+
+      let dy;
+      if (y1 > y2) {
+        dy = -2;
+      } else if (y1 < y2) {
+        dy = 2;
+      } else {
+        dy = 0;
+      }
+
+      ctx.beginPath();
+
+      if (dx === 0 && dy === 0) {
+        return;
+      }
+
+      x1 += dx;
+      y1 += dy;
+      x2 -= dx;
+      y2 -= dy;
+
+      ctx.save()
+      ctx.translate((dx), (dy));
+      board.redraw(x1, y1, ctx);
+      ctx.restore();
+      requestAnimationFrame(Animation.swap(x1, x2, y1, y2, ctx, board));
+    }
+  }
+
+
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (Animation);
+
+
+/***/ }),
+
 /***/ "./lib/board.js":
 /*!**********************!*\
   !*** ./lib/board.js ***!
@@ -98,6 +177,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _fruit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./fruit */ "./lib/fruit.js");
 /* harmony import */ var _empty_space__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./empty_space */ "./lib/empty_space.js");
 /* harmony import */ var _utility__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utility */ "./lib/utility.js");
+/* harmony import */ var _animation__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./animation */ "./lib/animation.js");
+
 
 
 
@@ -125,6 +206,11 @@ class Board {
     this.score = 0;
     this.fromMove = null;
     this.toMove = null;
+    this.x1 = null;
+    this.y1 = null;
+    this.x2 = null;
+    this.y2 = null;
+    // this.swap = this.swap.bind(this);
   }
 
   populate() {
@@ -135,28 +221,6 @@ class Board {
     }
     return this.grid;
   }
-
-  moveFruit(fromMove, toMove) {
-    if (this.isValidMove(fromMove, toMove) === true) {
-      let firstVeg = this.grid[fromMove[0]][fromMove[1]];
-      let secondVeg = this.grid[toMove[0]][toMove[1]];
-      this.grid[toMove[0]][toMove[1]] = firstVeg;
-      this.grid[fromMove[0]][fromMove[1]] = secondVeg;
-
-      if (this.checkForStreak() === true) {
-        this.renderWithCheck(this.ctx);
-      } else {
-        this.grid[toMove[0]][toMove[1]] = secondVeg;
-        this.grid[fromMove[0]][fromMove[1]] = firstVeg;
-      }
-    } else {
-      // this.shake(this.ctx);
-
-      alert('Invalid move') // change this - create a shake animation?
-    }
-  }
-
-
 
   isValidMove(fromMove, toMove) {
     let xPos1 = fromMove[0];
@@ -180,6 +244,36 @@ class Board {
       return true;
     }
   }
+
+  moveFruit(fromMove, toMove) {
+    if (this.isValidMove(fromMove, toMove) === true) {
+      let firstVeg = this.grid[fromMove[0]][fromMove[1]];
+      let secondVeg = this.grid[toMove[0]][toMove[1]];
+      this.grid[toMove[0]][toMove[1]] = firstVeg;
+      this.grid[fromMove[0]][fromMove[1]] = secondVeg;
+
+      this.fromMove = fromMove;
+      this.toMove = toMove;
+      this.x1 = (fromMove[0] * 80);
+      this.y1 = (fromMove[1] * 80);
+      this.x2 = (toMove[0] * 80);
+      this.y2 = (toMove[1] * 80);
+      requestAnimationFrame(_animation__WEBPACK_IMPORTED_MODULE_3__["default"].swap(this.x1, this.x2, this.y1, this.y2, this.ctx, this));
+
+
+
+      if (this.checkForStreak() === true) {
+        this.renderWithCheck(this.ctx);
+      } else {
+        this.grid[toMove[0]][toMove[1]] = secondVeg;
+        this.grid[fromMove[0]][fromMove[1]] = firstVeg;
+      }
+    } else {
+        // Animation.shake(this.ctx, this);
+        alert('Invalid move') // change this - create a shake animation?
+    }
+  }
+
 
   checkForStreak() {
     let check1 = this.verticalCheck(this.grid);
@@ -335,13 +429,15 @@ class Board {
     });
   }
 
-  redraw(xpos, ypos, ctx) {
+  redraw(ctx) {
     let images = [];
     for(let i = 0; i < this.grid.length; i++) {
       for(let j = 0; j < this.grid[i].length; j++) {
         let img = new Image();
         let FruitType = this.grid[i][j].type;
         let source =  this.icons[FruitType];
+        img.xpos = (i * 80);
+        img.ypos = (j * 80);
         img.src = source;
         images.push(img)
       }
@@ -350,8 +446,8 @@ class Board {
     images.forEach( (image) => {
       image.onload = () => {
         ctx.save();
-        ctx.clearRect(xpos, ypos, 80, 80);
-        ctx.drawImage(image, xpos, ypos, 80, 80);
+        ctx.clearRect(image.xpos, image.ypos, 80, 80);
+        ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
         ctx.restore();
       };
     });
