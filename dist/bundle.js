@@ -136,36 +136,6 @@ class Board {
     return this.grid;
   }
 
-  draw(ctx) {
-    let images = [];
-    for(let i = 0; i < this.grid.length; i++) {
-      for(let j = 0; j < this.grid[i].length; j++) {
-        let img = new Image();
-        let FruitType = this.grid[i][j].type;
-        let source =  this.icons[FruitType];
-        img.xpos = (i * 80);
-        img.ypos = (j * 80);
-        img.src = source;
-        images.push(img)
-      }
-    }
-
-    let numImages = 0;
-    images.forEach( (image) => {
-      image.onload = () => {
-        ctx.save();
-        ctx.clearRect(image.xpos, image.ypos, 80, 80);
-        ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
-        ctx.restore();
-
-        numImages++;
-        if (numImages === 36) {
-          this.checkForStreaks();
-        }
-      };
-    });
-  }
-
   moveFruit(fromMove, toMove) {
     if (this.isValidMove(fromMove, toMove) === true) {
       let firstVeg = this.grid[fromMove[0]][fromMove[1]];
@@ -173,7 +143,7 @@ class Board {
 
       this.grid[toMove[0]][toMove[1]] = firstVeg;
       this.grid[fromMove[0]][fromMove[1]] = secondVeg;
-      this.draw(this.ctx);
+      requestAnimationFrame(this.swap(fromMove, toMove, this.ctx));
     } else {
       alert('Invalid move') // change this - create a shake animation?
     }
@@ -246,7 +216,6 @@ class Board {
     }
   }
 
-
   horizontalCheck(grid) {
     let currentStreak = [];
 
@@ -295,7 +264,6 @@ class Board {
     }
   }
 
-
   eliminateStreak(streak) {
     for (let i = 0; i < streak.length; i++) {
       let row = streak[i]
@@ -304,6 +272,52 @@ class Board {
     }
 
     this.draw(this.ctx);
+  }
+
+
+  draw(ctx) {
+    let images = [];
+    for(let i = 0; i < this.grid.length; i++) {
+      for(let j = 0; j < this.grid[i].length; j++) {
+        let img = new Image();
+        let FruitType = this.grid[i][j].type;
+        let source =  this.icons[FruitType];
+        img.xpos = (i * 80);
+        img.ypos = (j * 80);
+        img.src = source;
+        images.push(img)
+      }
+    }
+
+    let numImages = 0;
+    images.forEach( (image) => {
+      image.onload = () => {
+        ctx.save();
+        ctx.clearRect(image.xpos, image.ypos, 80, 80);
+        ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
+        ctx.restore();
+
+        numImages++;
+        if (numImages === 36) {
+          this.checkForStreaks();
+        }
+      };
+    });
+  }
+
+  swap(pos1, pos2, ctx) {
+    requestAnimationFrame(this.swap)
+
+    
+    let x1 = (pos1[0] * 80);
+    let y1 = (pos1[1] * 80);
+    let x2 = (pos2[0] * 80);
+    let y2 = (pos2[1] * 80);
+
+    ctx.save();
+
+    ctx.restore();
+    this.draw(ctx);
   }
 }
 
@@ -416,7 +430,9 @@ class Game {
     $(".moves-left").text(`${this.movesLeft}`);
   }
 
-  play() {}
+  play() {
+
+  }
 
   getMove(e) {
     let y = e.offsetX;
