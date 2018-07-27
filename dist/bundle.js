@@ -123,7 +123,11 @@ class Board {
     this.score = 0;
     this.fromMove = null;
     this.toMove = null;
-    this.swap = this.swap.bind(this);
+    // this.swap = this.swap.bind(this);
+    this.x1 = null;
+    this.y1 = null;
+    this.x2 = null;
+    this.y2 = null;
   }
 
   transpose(array) {
@@ -139,16 +143,22 @@ class Board {
     return this.grid;
   }
 
+
   moveFruit(fromMove, toMove) {
     if (this.isValidMove(fromMove, toMove) === true) {
       this.fromMove = fromMove;
       this.toMove = toMove;
+      this.x1 = (fromMove[0] * 80);
+      this.y1 = (fromMove[1] * 80);
+      this.x2 = (toMove[0] * 80);
+      this.y2 = (toMove[1] * 80);
+
       let firstVeg = this.grid[fromMove[0]][fromMove[1]];
       let secondVeg = this.grid[toMove[0]][toMove[1]];
-
+      // requestAnimationFrame(this.swap(this.x1, this.x2, this.y1, this.y2));
       this.grid[toMove[0]][toMove[1]] = firstVeg;
       this.grid[fromMove[0]][fromMove[1]] = secondVeg;
-      requestAnimationFrame(this.swap);
+      this.renderWithCheck(this.ctx);
     } else {
       alert('Invalid move') // change this - create a shake animation?
     }
@@ -280,6 +290,7 @@ class Board {
   }
 
 
+
   renderWithCheck(ctx) {
     let images = [];
     for(let i = 0; i < this.grid.length; i++) {
@@ -334,47 +345,44 @@ class Board {
   }
 
 
-  swap() {
-    let x1 = (this.fromMove[0] * 80);
-    let y1 = (this.fromMove[1] * 80);
-    let x2 = (this.toMove[0] * 80);
-    let y2 = (this.toMove[1] * 80);
-
-
-    let dx;
-    if (x1 > x2) {
-      dx = -2;
-    } else if (x1 < x2) {
-      dx = 2;
-    } else {
-      dx = 0;
-    }
-
-    let dy;
-    if (y1 > y2) {
-      dy = -2;
-    } else if (y1 < y2) {
-      dy = 2;
-    } else {
-      dy = 0;
-    }
-
-    requestAnimationFrame(this.swap);
-    this.ctx.beginPath();
-    x1 += dx;
-    y1 += dy;
-    debugger
-    this.ctx.translate((dx), (dy));
-    this.redraw(x1, y1, this.ctx);
-
-      if (x1 === x2 && y1 === y2) {
-        dx = 0;
-        dy = 0;
-
-      }
-
-    this.ctx.closePath();
-  }
+  // swap(x1, x2, y1, y2) {
+  //   return  () => {
+  //     let dx;
+  //     if (x1 > x2) {
+  //       dx = -2;
+  //     } else if (x1 < x2) {
+  //       dx = 2;
+  //     } else {
+  //       dx = 0;
+  //     }
+  //
+  //     let dy;
+  //     if (y1 > y2) {
+  //       dy = -2;
+  //     } else if (y1 < y2) {
+  //       dy = 2;
+  //     } else {
+  //       dy = 0;
+  //     }
+  //
+  //     this.ctx.beginPath();
+  //
+  //     if (dx === 0 && dy === 0) {
+  //       return;
+  //     }
+  //
+  //     x1 += dx;
+  //     y1 += dy;
+  //     x2 -= dx;
+  //     y2 -= dy;
+  //
+  //     this.ctx.save()
+  //     this.ctx.translate((dx), (dy));
+  //     this.redraw(x1, y1, this.ctx);
+  //     this.ctx.restore();
+  //     requestAnimationFrame(this.swap(x1, x2, y1, y2));
+  //   }
+  //   }
 }
 
 
@@ -469,13 +477,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _board__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./board */ "./lib/board.js");
 
 
-
 class Game {
   constructor(board) {
-    this.objectiveScore = 1000;
-    this.movesLeft = 10;
+    this.objectiveScore = 500;
+    this.movesLeft = 3;
     this.board = board;
-    this.won = false;
     this.prevMove = null;
 
     this.getMove = this.getMove.bind(this);
@@ -486,8 +492,16 @@ class Game {
     $(".moves-left").text(`${this.movesLeft}`);
   }
 
-  play() {
+  play() {}
 
+  checkWon() {
+    if (this.movesLeft > 0 && this.board.score >= this.objectiveScore ) {
+      alert('ya')
+    } else if (this.movesLeft === 0 && this.board.score !== this.objectiveScore) {
+      alert('na')
+    } else {
+      return null;
+    }
   }
 
   getMove(e) {
@@ -536,6 +550,7 @@ class Game {
 
       this.board.moveFruit(fromMove, toMove);
       this.prevMove = false;
+      this.checkWon();
     } else {
       this.prevMove = this.getMove(e);
     }

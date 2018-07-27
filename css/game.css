@@ -12,7 +12,7 @@
   height: 125px;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
-  margin-bottom: 80px;
+  margin-bottom: 140px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -51,4 +51,34 @@
   background: #F5D2D7;
   font-family: 'Pacifico', cursive;
   font-size: 50px;
+}
+
+.info-container {
+  font-family: helvetica;
+  margin-left: 70px;
+  margin-top: 130px;
+  width: 200px;
+  text-align: center;
+}
+
+.connect-links {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  font-size: 15px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 40px;
+}
+
+a {
+  color: #483D8B;
+}
+
+h1 {
+  font-size: 15px;
+  font-family: 'Raleway', sans-serif;
+  margin-right: 10px;
+  color: #483D8B;
 }
