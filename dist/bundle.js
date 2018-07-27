@@ -95,18 +95,18 @@
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _veggie__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./veggie */ "./lib/veggie.js");
+/* harmony import */ var _fruit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./fruit */ "./lib/fruit.js");
 /* harmony import */ var _empty_space__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./empty_space */ "./lib/empty_space.js");
 
 
 
 const icons = {
-  carrot: './images/carrot.ico',
-  tomato: './images/tomato.png',
-  cucumber: './images/cucumber.png',
-  potato: './images/potato.png',
-  raddish: './images/raddish.png',
-  broccoli: './images/broccoli.png',
+  carrot: './images/carrot.png',
+  blueberry: './images/blueberry.png',
+  pineapple: './images/pineapple-icon.png',
+  banana: './images/banana.png',
+  strawberry: './images/strawberry-icon.png',
+  kiwi: './images/kiwi-icon.png',
   null: './images/emptyspace.png'
 }
 
@@ -118,6 +118,7 @@ class Board {
       for (let i = 0; i < this.grid.length; i ++) {
         this.grid[i] = (new Array(6))
       }
+    this.score = 0;
     this.populate();
   }
 
@@ -128,7 +129,7 @@ class Board {
   populate() {
     for (let i = 0; i < this.grid.length; i++) {
       for (let j = 0; j < this.grid.length; j++) {
-        this.grid[i][j] = new _veggie__WEBPACK_IMPORTED_MODULE_0__["default"]();
+        this.grid[i][j] = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]();
       }
     }
 
@@ -140,8 +141,8 @@ class Board {
     for(let i = 0; i < this.grid.length; i++) {
       for(let j = 0; j < this.grid[i].length; j++) {
         let img = new Image();
-        let veggieType = this.grid[i][j].type;
-        let source =  this.icons[veggieType];
+        let FruitType = this.grid[i][j].type;
+        let source =  this.icons[FruitType];
         img.xpos = (i * 80);
         img.ypos = (j * 80);
         img.src = source;
@@ -162,10 +163,10 @@ class Board {
           this.checkForStreaks();
         }
       };
-    })
+    });
   }
 
-  moveVeggie(fromMove, toMove) {
+  moveFruit(fromMove, toMove) {
     if (this.isValidMove(fromMove, toMove) === true) {
       let firstVeg = this.grid[fromMove[0]][fromMove[1]];
       let secondVeg = this.grid[toMove[0]][toMove[1]];
@@ -205,6 +206,7 @@ class Board {
     this.verticalCheck(this.grid);
     let transGrid = this.transpose(this.grid);
     this.horizontalCheck(transGrid);
+    $(".player-score").text(this.score);
   }
 
   verticalCheck(grid) {
@@ -224,6 +226,7 @@ class Board {
           if (grid[i][j].type !== grid[i][(j - 1)].type) {
 
             if (currentStreak.length >= 3) {
+              this.score += 50;
               this.eliminateStreak(currentStreak);
             }
 
@@ -234,6 +237,7 @@ class Board {
 
         if (j === grid.length - 1) {
           if (currentStreak.length >= 3) {
+            this.score += 50;
             this.eliminateStreak(currentStreak);
             currentStreak = [];
           }
@@ -247,7 +251,6 @@ class Board {
     let currentStreak = [];
 
     for (let i = 0 ; i < grid.length; i++) {
-      ""
       for (let j = 1; j < grid.length; j++) {
         let checked = false;
 
@@ -264,6 +267,7 @@ class Board {
                 return [pos[1], pos[0]];
               });
 
+              this.score += 50;
               this.eliminateStreak(currentStreak2);
             }
 
@@ -282,6 +286,7 @@ class Board {
               return [pos[1], pos[0]]
             });
 
+            this.score += 50;
             this.eliminateStreak(currentStreak2);
             currentStreak = [];
           }
@@ -295,7 +300,7 @@ class Board {
     for (let i = 0; i < streak.length; i++) {
       let row = streak[i]
       this.grid[row[0]].splice(row[1], 1);
-      this.grid[row[0]].unshift(new _veggie__WEBPACK_IMPORTED_MODULE_0__["default"]());
+      this.grid[row[0]].unshift(new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]());
     }
 
     this.draw(this.ctx);
@@ -352,6 +357,36 @@ class EmptySpace {
 
 /***/ }),
 
+/***/ "./lib/fruit.js":
+/*!**********************!*\
+  !*** ./lib/fruit.js ***!
+  \**********************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+const DEFAULT = {
+  TYPE: [
+    "carrot",
+    "blueberry",
+    "kiwi",
+    "pineapple",
+    "strawberry",
+    "banana"]
+}
+
+class Fruit {
+  constructor() {
+    this.type = DEFAULT.TYPE[Math.floor(Math.random() * DEFAULT.TYPE.length)];
+  }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (Fruit);
+
+
+/***/ }),
+
 /***/ "./lib/game.js":
 /*!*********************!*\
   !*** ./lib/game.js ***!
@@ -367,7 +402,6 @@ __webpack_require__.r(__webpack_exports__);
 
 class Game {
   constructor(board) {
-    this.score = 0;
     this.objectiveScore = 1000;
     this.movesLeft = 10;
     this.board = board;
@@ -375,22 +409,14 @@ class Game {
     this.prevMove = null;
 
     this.getMove = this.getMove.bind(this);
-    this.play = this.play.bind(this);
     this.handleMove = this.handleMove.bind(this);
 
     $("#canvas").on('click', this.handleMove);
-    $(".player-score").text(this.board.score);
     $(".target-score").text(`Target: ${this.objectiveScore}`);
     $(".moves-left").text(`${this.movesLeft}`);
   }
 
-  play() {
-    while (this.won === false) {
-      this.won = true;
-    }
-
-    this.winner();
-  }
+  play() {}
 
   getMove(e) {
     let y = e.offsetX;
@@ -432,15 +458,15 @@ class Game {
     if (this.prevMove) {
       let fromMove = this.prevMove;
       let toMove = this.getMove(e);
-      this.board.moveVeggie(fromMove, toMove);
+
+      this.movesLeft -= 1;
+      $(".moves-left").text(`${this.movesLeft}`);
+
+      this.board.moveFruit(fromMove, toMove);
       this.prevMove = false;
     } else {
       this.prevMove = this.getMove(e);
     }
-  }
-
-  winner() {
-    console.log('You won');
   }
 
 }
@@ -479,36 +505,6 @@ class GameView {
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (GameView);
-
-
-/***/ }),
-
-/***/ "./lib/veggie.js":
-/*!***********************!*\
-  !*** ./lib/veggie.js ***!
-  \***********************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-const DEFAULT = {
-  TYPE: [
-    "carrot",
-    "tomato",
-    "broccoli",
-    "cucumber",
-    "raddish",
-    "potato"]
-}
-
-class Veggie {
-  constructor() {
-    this.type = DEFAULT.TYPE[Math.floor(Math.random() * DEFAULT.TYPE.length)];
-  }
-}
-
-/* harmony default export */ __webpack_exports__["default"] = (Veggie);
 
 
 /***/ })
