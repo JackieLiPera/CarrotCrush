@@ -97,6 +97,7 @@
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _fruit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./fruit */ "./lib/fruit.js");
 /* harmony import */ var _empty_space__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./empty_space */ "./lib/empty_space.js");
+/* harmony import */ var _utility__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utility */ "./lib/utility.js");
 
 
 
@@ -126,10 +127,6 @@ class Board {
     this.toMove = null;
   }
 
-  transpose(array) {
-    return array[0].map((col, i) => array.map(row => row[i]));
-  }
-
   populate() {
     for (let i = 0; i < this.grid.length; i++) {
       for (let j = 0; j < this.grid.length; j++) {
@@ -138,7 +135,6 @@ class Board {
     }
     return this.grid;
   }
-
 
   moveFruit(fromMove, toMove) {
     if (this.isValidMove(fromMove, toMove) === true) {
@@ -154,9 +150,13 @@ class Board {
         this.grid[fromMove[0]][fromMove[1]] = firstVeg;
       }
     } else {
+      // this.shake(this.ctx);
+
       alert('Invalid move') // change this - create a shake animation?
     }
   }
+
+
 
   isValidMove(fromMove, toMove) {
     let xPos1 = fromMove[0];
@@ -183,7 +183,7 @@ class Board {
 
   checkForStreak() {
     let check1 = this.verticalCheck(this.grid);
-    let transGrid = this.transpose(this.grid);
+    let transGrid = _utility__WEBPACK_IMPORTED_MODULE_2__["default"].transpose(this.grid);
     let check2 = this.horizontalCheck(transGrid);
 
 
@@ -201,7 +201,7 @@ class Board {
       this.eliminateStreak(streak);
     }
 
-    let transGrid = this.transpose(this.grid);
+    let transGrid = _utility__WEBPACK_IMPORTED_MODULE_2__["default"].transpose(this.grid);
     if (this.horizontalCheck(transGrid)) {
       streak = this.horizontalCheck(transGrid);
       this.eliminateStreak(streak);
@@ -357,45 +357,6 @@ class Board {
     });
   }
 
-
-  swap(x1, x2, y1, y2) {
-    return  () => {
-      let dx;
-      if (x1 > x2) {
-        dx = -2;
-      } else if (x1 < x2) {
-        dx = 2;
-      } else {
-        dx = 0;
-      }
-
-      let dy;
-      if (y1 > y2) {
-        dy = -2;
-      } else if (y1 < y2) {
-        dy = 2;
-      } else {
-        dy = 0;
-      }
-
-      this.ctx.beginPath();
-
-      if (dx === 0 && dy === 0) {
-        return;
-      }
-
-      x1 += dx;
-      y1 += dy;
-      x2 -= dx;
-      y2 -= dy;
-
-      this.ctx.save()
-      this.ctx.translate((dx), (dy));
-      this.redraw(x1, y1, this.ctx);
-      this.ctx.restore();
-      requestAnimationFrame(this.swap(x1, x2, y1, y2));
-    }
-   }
 }
 
 
@@ -606,6 +567,28 @@ class GameView {
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (GameView);
+
+
+/***/ }),
+
+/***/ "./lib/utility.js":
+/*!************************!*\
+  !*** ./lib/utility.js ***!
+  \************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+const Utility = {
+
+  transpose(array) {
+    return array[0].map((col, i) => array.map(row => row[i]));
+  }
+
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (Utility);
 
 
 /***/ })
