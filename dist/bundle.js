@@ -100,6 +100,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 const icons = {
   carrot: './images/carrot.png',
   blueberry: './images/blueberry.png',
@@ -357,44 +358,44 @@ class Board {
   }
 
 
-  // swap(x1, x2, y1, y2) {
-  //   return  () => {
-  //     let dx;
-  //     if (x1 > x2) {
-  //       dx = -2;
-  //     } else if (x1 < x2) {
-  //       dx = 2;
-  //     } else {
-  //       dx = 0;
-  //     }
-  //
-  //     let dy;
-  //     if (y1 > y2) {
-  //       dy = -2;
-  //     } else if (y1 < y2) {
-  //       dy = 2;
-  //     } else {
-  //       dy = 0;
-  //     }
-  //
-  //     this.ctx.beginPath();
-  //
-  //     if (dx === 0 && dy === 0) {
-  //       return;
-  //     }
-  //
-  //     x1 += dx;
-  //     y1 += dy;
-  //     x2 -= dx;
-  //     y2 -= dy;
-  //
-  //     this.ctx.save()
-  //     this.ctx.translate((dx), (dy));
-  //     this.redraw(x1, y1, this.ctx);
-  //     this.ctx.restore();
-  //     requestAnimationFrame(this.swap(x1, x2, y1, y2));
-  //   }
-  //  }
+  swap(x1, x2, y1, y2) {
+    return  () => {
+      let dx;
+      if (x1 > x2) {
+        dx = -2;
+      } else if (x1 < x2) {
+        dx = 2;
+      } else {
+        dx = 0;
+      }
+
+      let dy;
+      if (y1 > y2) {
+        dy = -2;
+      } else if (y1 < y2) {
+        dy = 2;
+      } else {
+        dy = 0;
+      }
+
+      this.ctx.beginPath();
+
+      if (dx === 0 && dy === 0) {
+        return;
+      }
+
+      x1 += dx;
+      y1 += dy;
+      x2 -= dx;
+      y2 -= dy;
+
+      this.ctx.save()
+      this.ctx.translate((dx), (dy));
+      this.redraw(x1, y1, this.ctx);
+      this.ctx.restore();
+      requestAnimationFrame(this.swap(x1, x2, y1, y2));
+    }
+   }
 }
 
 
