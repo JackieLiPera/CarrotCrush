@@ -107,7 +107,7 @@ const icons = {
   potato: './images/potato.png',
   raddish: './images/raddish.png',
   broccoli: './images/broccoli.png',
-  null: './images/null.png'
+  null: './images/emptyspace.png'
 }
 
 class Board {
@@ -119,9 +119,11 @@ class Board {
         this.grid[i] = (new Array(6))
       }
     this.populate();
-    this.score = 0;
   }
 
+  transpose(array) {
+    return array[0].map((col, i) => array.map(row => row[i]));
+  }
 
   populate() {
     for (let i = 0; i < this.grid.length; i++) {
@@ -200,65 +202,29 @@ class Board {
   }
 
   checkForStreaks() {
+    this.verticalCheck(this.grid);
+    let transGrid = this.transpose(this.grid);
+    this.horizontalCheck(transGrid);
+  }
+
+  verticalCheck(grid) {
     let currentStreak = [];
-    let horizontalStreaks = [];
-    let verticalStreaks = [];
-    let score = 0;
 
-    //horizontal check
-    for (let i = 0; i < this.grid.length; i++) {
-      for (let j = 1; j < this.grid.length; j++) {
-        let checked = false;
-
-        if (currentStreak.length === 0) {
-          currentStreak.push([(j - 1), i]);
-        }
-
-        if (j === this.grid.length - 1) {
-          checked = true;
-        } else if (this.grid[j][i].type === this.grid[(j - 1)][i].type) {
-          currentStreak.push([j, i])
-        } else {
-          if (this.grid[j][i].type !== this.grid[(j - 1)][i].type) {
-            if (currentStreak.length >= 3) {
-              horizontalStreaks.push(currentStreak);
-            }
-
-            currentStreak = [];
-            checked = false;
-          }
-        }
-
-        if (checked) {
-          currentStreak = [];
-          score += (horizontalStreaks.length * 50);
-          this.score += score;
-          if (horizontalStreaks.length > 0) {
-            this.eliminateStreaks(horizontalStreaks);
-            horizontalStreaks = [];
-          }
-        }
-      }
-
-    }
-
-    //vertical check
-    for (let i = 0 ; i < this.grid.length; i++) {
-      for (let j = 1; j < this.grid.length; j++) {
+    for (let i = 0 ; i < grid.length; i++) {
+      for (let j = 1; j < grid.length; j++) {
         let checked = false;
 
         if (currentStreak.length === 0) {
           currentStreak.push([i, (j - 1)]);
         }
 
-        if (j === this.grid.length - 1) {
-          checked = true;
-        } else if (this.grid[i][j].type === this.grid[i][(j - 1)].type){
+        if (grid[i][j].type === grid[i][(j - 1)].type){
           currentStreak.push([i, j]);
         } else {
-          if (this.grid[i][j].type !== this.grid[i][(j - 1)].type) {
+          if (grid[i][j].type !== grid[i][(j - 1)].type) {
+
             if (currentStreak.length >= 3) {
-              verticalStreaks.push(currentStreak);
+              this.eliminateVertStreak(currentStreak);
             }
 
             currentStreak = [];
@@ -266,46 +232,86 @@ class Board {
           }
         }
 
-        if (checked) {
-          currentStreak = [];
-          score += (verticalStreaks.length * 50);
-          this.score += score;
-          if (verticalStreaks.length > 0) {
-            debugger
-            this.eliminateStreaks(verticalStreaks);
-            verticalStreaks = [];
+        if (j === grid.length - 1) {
+          if (currentStreak.length >= 3) {
+            this.eliminateVertStreak(currentStreak);
+            currentStreak = [];
           }
         }
       }
     }
-
   }
 
 
-  eliminateStreaks(streaks) {
-    if (streaks.length === 0){
-      return null;
+  horizontalCheck(grid) {
+    let currentStreak = [];
+
+    for (let i = 0 ; i < grid.length; i++) {
+      debugger
+      for (let j = 1; j < grid.length; j++) {
+        let checked = false;
+
+        if (currentStreak.length === 0) {
+          currentStreak.push([i, (j - 1)]);
+        }
+        if (grid[i][j].type === grid[i][(j - 1)].type){
+          currentStreak.push([i, j]);
+        } else {
+          if (grid[i][j].type !== grid[i][(j - 1)].type) {
+
+            if (currentStreak.length >= 3) {
+              let currentStreak2 = currentStreak.map ((pos) => {
+                return [pos[1], pos[0]];
+              });
+              debugger
+              this.eliminateHorizStreak(currentStreak2);
+            }
+
+            currentStreak = [];
+            checked = false;
+          }
+        }
+
+        if (j === grid.length - 1) {
+          checked = true;
+        }
+
+        if (checked) {
+          if (currentStreak.length >= 3) {
+            let currentStreak2 = currentStreak.map ((pos) => {
+              return [pos[1], pos[0]]
+            });
+
+            this.eliminateHorizStreak(currentStreak2);
+            currentStreak = [];
+          }
+        }
+      }
+    }
+  }
+
+  eliminateHorizStreak(streak) {
+    let tempGrid = this.transpose(this.grid);
+    debugger
+    for (let i = 0; i < streak.length; i++) {
+      let row = streak[i]
+      tempGrid[row[0]].splice(row[1], 1);
+      this.transpose(tempGrid);
+      tempGrid[row[1]].unshift(new _veggie__WEBPACK_IMPORTED_MODULE_0__["default"]())
     }
 
+    this.grid = tempGrid;
+    this.draw(this.ctx);
+  }
 
-    streaks.forEach ((streak) => {
-      debugger
-      for (let i = 0; i < streak.length; i++) {
-        let row = streak[i]
+  eliminateVertStreak(streak) {
+    for (let i = 0; i < streak.length; i++) {
+      let row = streak[i]
+      this.grid[row[0]].splice(row[1], 1);
+      this.grid[row[0]].unshift(new _veggie__WEBPACK_IMPORTED_MODULE_0__["default"]());
+    }
 
-        this.grid[row[0]].splice(row[1], 1);
-        this.grid[row[0]].unshift(new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]());
-      }
-
-      for (let i = 0; i < streak.length; i++) {
-        let row = streak[i];
-        this.grid[row[0]][row[1]] = (new _veggie__WEBPACK_IMPORTED_MODULE_0__["default"]());
-        debugger
-      }
-
-      this.draw(this.ctx);
-      debugger
-    });
+    this.draw(this.ctx);
   }
 }
 
@@ -386,7 +392,7 @@ class Game {
     this.handleMove = this.handleMove.bind(this);
 
     $("#canvas").on('click', this.handleMove);
-    $(".player-score").text(this.score);
+    $(".player-score").text(this.board.score);
     $(".target-score").text(`Target: ${this.objectiveScore}`);
     $(".moves-left").text(`${this.movesLeft}`);
   }
