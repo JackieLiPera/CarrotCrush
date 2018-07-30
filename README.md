@@ -1,52 +1,27 @@
-<<<<<<< HEAD
-CarrotCrush is a Candy Crush inspired 1-player game. The game begins with a 6x6 square grid populated with of 6 different fruits randomized on the board. The player can swap adjacent fruits to complete a row of three and add points to their score. The object of the game is to reach the level-determined point objective before the number of turns runs out.
-=======
 # CarrotCrush
 
-# Background 
+# Background
 
-CarrotCrush is a healthy spin on the popular Candy Crush 1-player game. The game begins with a 8x8 square grid populated with of 6 different "vegetables" randomized on the board.
-The player can swap adjacent veggies to complete a row of three and add points to their score. 
-The object of the game is to reach the level-determined point objective before the number of turns runs out. 
+CarrotCrush is a Candy Crush inspired 1-player game with a healthy spin. The game begins 36 randomly generated blueberries, kiwis, pineapples, strawberries, bananas and carrots. A player can swap adjacent items to complete a row of three or more and add points to their score. Longer streaks and streaks of carrots are worth more points. The object of the game is to reach the level-determined point objective before your number of turns runs out.
 
-# Functionality & MVP
+See the demo here!
 
-* Players can swap adjacent veggies
-* Players can add to their score
-* Players can reset the game
-* Player can see how many moves they have left 
-* Alert the player if there are no moves and reshuffle the board
+# Functionality
 
-In addition: 
- 
-* There will be a brief description of the rules
-* There will be a production README
+* Players can swap adjacent items
+* Finding streaks of three or more will add to the players score
+* Players can view their score, the level objective and how many moves they have left
+* Players can view the rules whenever they need
 
 # Wireframes
 This app will consist of a single screen with game board and nav links to the Github, my LinkedIn, and the About modal.
-Game controls will include a Restart button.
 
 ![](https://i.imgur.com/mly6rzV.jpg)
 
 
-# Architechture and Technologies 
+# Architechture and Technologies
 
-* Javascript 
+* Javascript
 * HTML5
-* Canvas 
+* Canvas
 * CSS
-
-# Implementation and Timeline
-
-Board Class 
-Game Class 
-Moving Object class 
-Veggie Class - will inherit from moving object class 
-
-Day 1 - Get veggies populated on the game board 
-Day 2 - Implement movement on player click 
-Day 3 - Implement logic / score system and levels 
-
-# Bonus Features
-* Level 2
->>>>>>> 7a81ebcde09c1502491eb3e9efbf5a5ecf512a71
