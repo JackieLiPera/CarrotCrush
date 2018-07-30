@@ -144,7 +144,7 @@ const Animation = {
   //       dy = 0;
   //     }
   //
-  //     debugger
+  //     
   //
   //
   //     if (dx === 0 && dy === 0) {
@@ -167,7 +167,7 @@ const Animation = {
 
 
   shift(col, y, base, ctx, board) {
-    debugger
+
     if (y === base) {
       board.draw(ctx);
       return;
@@ -410,7 +410,7 @@ class Board {
   }
 
   shift(streak) {
-    debugger
+    
     let col = streak[0][0];
     let row = streak[streak.length - 1][1];
     let base = (row * 80);
@@ -422,12 +422,12 @@ class Board {
         pos = [(col), (i - 1)];
       }
     }
-    debugger
+
     let y = (pos[1] * 80);
-    debugger
+    
     for (let i = 0; i < streak.length; i++) {
       _animation__WEBPACK_IMPORTED_MODULE_3__["default"].shift(col, y, base, this.ctx, this);
-      debugger
+      
       this.grid[col].unshift(new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]());
     }
   }
