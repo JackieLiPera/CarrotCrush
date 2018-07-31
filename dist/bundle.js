@@ -207,7 +207,7 @@ class Board {
   constructor(ctx) {
     this.grid = new Array(6);
     for (let i = 0; i < this.grid.length; i ++) {
-      this.grid[i] = (new Array(6))
+      this.grid[i] = (new Array(9))
     }
     this.populate();
     this.ctx = ctx;
@@ -216,17 +216,17 @@ class Board {
     this.draw = this.draw.bind(this);
   }
 
-  populate() { // returns populated grid
+  populate() {
     for (let i = 0; i < this.grid.length; i++) {
-      for (let j = 0; j < this.grid.length; j++) {
+      for (let j = 0; j < this.grid[i].length; j++) {
         let pos = [i, j]
-        this.grid[i][j] = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"](pos);
+        this.grid[i][j] = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]([i, (j - 3)]);
       }
     }
     return this.grid;
   }
 
-  isValidMove(fromMove, toMove) { // returns a boolean
+  isValidMove(fromMove, toMove) {
     let xPos1 = fromMove[0];
     let xPos2 = toMove[0];
     let yPos1 = fromMove[1];
@@ -249,7 +249,7 @@ class Board {
     }
   }
 
-  moveFruit(fromMove, toMove) { // too coupled?
+  moveFruit(fromMove, toMove) {
     if (this.isValidMove(fromMove, toMove)) {
       let firstVeg = this.grid[fromMove[0]][fromMove[1]];
       let secondVeg = this.grid[toMove[0]][toMove[1]];
@@ -268,7 +268,7 @@ class Board {
     }
   }
 
-  foundStreak() { // returns a boolean
+  foundStreak() {
     let check1 = this.verticalCheck(this.grid);
     let transGrid = _utility__WEBPACK_IMPORTED_MODULE_2__["default"].transpose(this.grid);
     let check2 = this.horizontalCheck(transGrid);
@@ -290,11 +290,11 @@ class Board {
     }
   }
 
-  verticalCheck(grid) { // returns positions of a single streak
+  verticalCheck(grid) {
     let currentStreak = [];
 
     for (let i = 0 ; i < grid.length; i++) {
-      for (let j = 1; j < grid.length; j++) {
+      for (let j = 1; j < grid[i].length; j++) {
 
         if (currentStreak.length === 0) {
           currentStreak.push([i, (j - 1)]);
@@ -329,7 +329,7 @@ class Board {
   horizontalCheck(grid) {
     let currentStreak = [];
     for (let i = 0 ; i < grid.length; i++) {
-      for (let j = 1; j < grid.length; j++) {
+      for (let j = 1; j < grid[i].length; j++) {
 
         if (currentStreak.length === 0) {
           currentStreak.push([i, (j - 1)]);
@@ -369,8 +369,10 @@ class Board {
   }
 
   eliminateStreak(streak) {
+    debugger
     for (let i = 0; i < streak.length; i++) {
       let pos = streak[i]
+      this.grid[pos[0]].unshift(new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]())
       this.grid[pos[0]].splice(pos[1], 1, new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]([pos[0], pos[1]]));
     }
 
@@ -378,8 +380,11 @@ class Board {
   }
 
   shift(streak) {
-
     // let col = streak[0][0];
+    //
+    // for (let i = 0; i < streak.length; i++) {
+    //   col.unshift(new Fruit())
+
     // let shiftedCol = this.grid[col];
     // let pos;
     // for (let i = 1; i < shiftedCol.length; i++) {
@@ -395,33 +400,12 @@ class Board {
 
   }
 
-  async initialRender() {
-    let images = [];
-    for(let i = 0; i < this.grid.length; i++) {
-      for(let j = 0; j < this.grid[i].length; j++) {
-        let fruit = this.grid[i][j];
-        let fruitImg = fruit.createImage();
-        images.push(fruitImg);
-      }
-    }
-
-    images.forEach( (image) => {
-      image.onload = () => {
-        this.ctx.save();
-        this.ctx.clearRect(image.xpos, image.ypos, 80, 80);
-        this.ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
-        this.ctx.restore();
-      };
-    });
-  }
-
   async draw() {
     this.ctx.clearRect(0, 0, this.ctx.height, this.ctx.width);
     requestAnimationFrame(this.draw);
 
     for(let i = 0; i < this.grid.length; i++) {
-      for(let j = 0; j < this.grid[i].length; j++) {
-        debugger
+      for(let j = 3; j < this.grid[i].length; j++) {
         let item = this.grid[i][j]
         item.draw(this.ctx);
       }
@@ -473,6 +457,7 @@ class EmptySpace {
     this.type = 'empty';
     this.pos = pos;
     this.vel = 0;
+    this.falling = false;
   }
 
   createImage() {
@@ -529,25 +514,28 @@ class Fruit {
     this.type = DEFAULT.TYPE[Math.floor(Math.random() * DEFAULT.TYPE.length)];;
     this.pos = pos;
     this.vel = 0;
+    this.falling = false;
   }
 
   createImage() {
     let img = new Image();
-    img.src = ICONS[this.type]
+    img.src = ICONS[this.type];
     img.xpos = (this.pos[0] * 80);
     img.ypos = (this.pos[1] * 80);
     return img;
   }
 
-  shift() {
-
-  }
 
   draw(ctx) {
-    debugger
     let image = this.createImage();
     ctx.clearRect(image.xpos, image.ypos, 80, 80);
     ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
+  }
+
+  move(ctx) {
+    if (this.falling) {
+      pos[1] += vel;
+    }
   }
 }
 
@@ -679,7 +667,7 @@ class GameView {
   }
 
   start() {
-    this.board.initialRender().then( () => {
+    this.board.draw().then( () => {
       this.board.getStreak();
     });
     this.game.play();
