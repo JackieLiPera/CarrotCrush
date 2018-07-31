@@ -144,7 +144,7 @@ const Animation = {
   //       dy = 0;
   //     }
   //
-  //     
+  //
   //
   //
   //     if (dx === 0 && dy === 0) {
@@ -166,18 +166,17 @@ const Animation = {
   // }
 
 
-  shift(col, y, base, ctx, board) {
-
-    if (y === base) {
-      board.draw(ctx);
+  shift(base, dy, ctx) {
+    if (dy >= base) {
       return;
     }
 
-    y += 1;
+    dy += (dy / 60);
     ctx.save();
-    board.draw(ctx);
+    ctx.beginPath();
+    ctx.translate(0, (dy / 60));
     ctx.restore();
-    requestAnimationFrame(Animation.shift(col, y, base, ctx, board));
+    requestAnimationFrame(Animation.shift(base, dy, ctx));
   }
 }
 
@@ -225,7 +224,6 @@ class Board {
     this.icons = icons;
     this.ctx = ctx;
     this.score = 0;
-    this.draw = this.draw.bind(this);
     this.shift = this.shift.bind(this);
   }
 
@@ -261,7 +259,7 @@ class Board {
     }
   }
 
-  moveFruit(fromMove, toMove) { //
+  moveFruit(fromMove, toMove) { // too coupled?
     if (this.isValidMove(fromMove, toMove) === true) {
       let firstVeg = this.grid[fromMove[0]][fromMove[1]];
       let secondVeg = this.grid[toMove[0]][toMove[1]];
@@ -269,10 +267,8 @@ class Board {
       this.grid[toMove[0]][toMove[1]] = firstVeg;
       this.grid[fromMove[0]][fromMove[1]] = secondVeg;
 
-
-      let checkBoardForStreaks = this.checkBoardForStreaks();
       if (this.foundStreak() === true) {
-        this.draw(this.ctx).then(checkBoardForStreaks);
+        this.getStreak();
       } else {
         this.grid[toMove[0]][toMove[1]] = secondVeg;
         this.grid[fromMove[0]][fromMove[1]] = firstVeg;
@@ -294,7 +290,7 @@ class Board {
     }
   }
 
-  checkBoardForStreaks() {
+  getStreak() {
     let streak;
     if (this.verticalCheck(this.grid)) {
       streak = this.verticalCheck(this.grid);
@@ -313,7 +309,6 @@ class Board {
 
     for (let i = 0 ; i < grid.length; i++) {
       for (let j = 1; j < grid.length; j++) {
-        let checked = false;
 
         if (currentStreak.length === 0) {
           currentStreak.push([i, (j - 1)]);
@@ -327,12 +322,10 @@ class Board {
             if (currentStreak.length >= 3) {
               this.score += 50;
               $(".player-score").text(this.score);
-              this.animationState = 1;
               return currentStreak;
             }
 
             currentStreak = [];
-            checked = false;
           }
         }
 
@@ -340,7 +333,6 @@ class Board {
           if (currentStreak.length >= 3) {
             this.score += 50;
             $(".player-score").text(this.score);
-            this.animationState = 1;
             return currentStreak;
           }
         }
@@ -353,7 +345,6 @@ class Board {
 
     for (let i = 0 ; i < grid.length; i++) {
       for (let j = 1; j < grid.length; j++) {
-        let checked = false;
 
         if (currentStreak.length === 0) {
           currentStreak.push([i, (j - 1)]);
@@ -370,20 +361,14 @@ class Board {
 
               this.score += 50;
               $(".player-score").text(this.score);
-              this.animationState = 2;
               return reversedStreak;
             }
 
             currentStreak = [];
-            checked = false;
           }
         }
 
         if (j === grid.length - 1) {
-          checked = true;
-        }
-
-        if (checked) {
           if (currentStreak.length >= 3) {
             let reversedStreak = currentStreak.map ((pos) => {
               return [pos[1], pos[0]]
@@ -391,7 +376,6 @@ class Board {
 
             this.score += 50;
             $(".player-score").text(this.score);
-            this.animationState = 2;
             return reversedStreak;
           }
         }
@@ -405,16 +389,11 @@ class Board {
       this.grid[pos[0]].splice(pos[1], 1, new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]());
     }
 
-    let shift = this.shift(streak);
-    this.draw(this.ctx).then(shift);
+    this.initialRender();
   }
 
   shift(streak) {
-    
     let col = streak[0][0];
-    let row = streak[streak.length - 1][1];
-    let base = (row * 80);
-
     let shiftedCol = this.grid[col];
     let pos;
     for (let i = 1; i < shiftedCol.length; i++) {
@@ -423,42 +402,67 @@ class Board {
       }
     }
 
-    let y = (pos[1] * 80);
-    
+    let lastFruit = streak[streak.length - 1][1];
+    let base = (lastFruit * 80);
+    let top = (pos[1] * 80);
+    let dy = Math.abs(top - base);
     for (let i = 0; i < streak.length; i++) {
-      _animation__WEBPACK_IMPORTED_MODULE_3__["default"].shift(col, y, base, this.ctx, this);
-      
+      _animation__WEBPACK_IMPORTED_MODULE_3__["default"].shift(base, dy, this.ctx);
+
       this.grid[col].unshift(new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]());
     }
   }
 
-  async draw(ctx) {
+  async initialRender() {
     let images = [];
-      for(let i = 0; i < this.grid.length; i++) {
-        for(let j = 0; j < this.grid[i].length; j++) {
-          let img = new Image();
+    for(let i = 0; i < this.grid.length; i++) {
+      for(let j = 0; j < this.grid[i].length; j++) {
+        let img = new Image();
 
-          let fruitType = this.grid[i][j].type;
-          let source = this.icons[fruitType];
+        let fruitType = this.grid[i][j].type;
+        let source = this.icons[fruitType];
 
-          img.xpos = (i * 80);
-          img.ypos = (j * 80);
-          img.src = source;
-          images.push(img)
-        }
+        img.xpos = (i * 80);
+        img.ypos = (j * 80);
+        img.src = source;
+        images.push(img)
       }
+    }
 
-      images.forEach( (image) => {
-        image.onload = () => {
-          this.ctx.save();
-          this.ctx.clearRect(image.xpos, image.ypos, 80, 80);
-          this.ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
-          this.ctx.restore();
-        };
-      }
-    );
+    images.forEach( (image) => {
+      image.onload = () => {
+        this.ctx.save();
+        this.ctx.clearRect(image.xpos, image.ypos, 80, 80);
+        this.ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
+        this.ctx.restore();
+      };
+    });
   }
 
+  draw() {
+    debugger
+    let images = [];
+    for(let i = 0; i < this.grid.length; i++) {
+      for(let j = 0; j < this.grid[i].length; j++) {
+        let img = new Image();
+
+        let fruitType = this.grid[i][j].type;
+        let source = this.icons[fruitType];
+
+        img.xpos = (i * 80);
+        img.ypos = (j * 80);
+        img.src = source;
+        images.push(img);
+      }
+    }
+
+    images.forEach( (image) => {
+      this.ctx.save();
+      this.ctx.clearRect(image.xpos, image.ypos, 80, 80);
+      this.ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
+      this.ctx.restore();
+    });
+  }
 }
 
 
@@ -664,8 +668,9 @@ class GameView {
   }
 
   start() {
-    let checkBoardForStreaks = this.board.checkBoardForStreaks();
-    this.board.draw(this.ctx).then(checkBoardForStreaks);
+    this.board.initialRender(this.ctx).then( () => {
+      this.board.getStreak();
+    });
     this.game.play();
   }
 }
