@@ -328,7 +328,6 @@ class Board {
 
   horizontalCheck(grid) {
     let currentStreak = [];
-
     for (let i = 0 ; i < grid.length; i++) {
       for (let j = 1; j < grid.length; j++) {
 
@@ -375,28 +374,25 @@ class Board {
       this.grid[pos[0]].splice(pos[1], 1, new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]([pos[0], pos[1]]));
     }
 
-    this.draw().then(this.shift(streak));
+    this.draw();
   }
 
   shift(streak) {
-    let col = streak[0][0];
-    let shiftedCol = this.grid[col];
-    let pos;
-    for (let i = 1; i < shiftedCol.length; i++) {
-      if (shiftedCol[i].type === 'empty' && shiftedCol[i - 1].type !== 'empty') {
-        pos = [(col), (i - 1)];
-      }
-    }
 
-    let lastFruit = streak[streak.length - 1][1];
-    let base = (lastFruit * 80);
-    let top = (pos[1] * 80);
-    let dy = Math.abs(top - base);
-    for (let i = 0; i < streak.length; i++) {
-      // Animation.shift(base, dy, this.ctx);
+    // let col = streak[0][0];
+    // let shiftedCol = this.grid[col];
+    // let pos;
+    // for (let i = 1; i < shiftedCol.length; i++) {
+    //   if (shiftedCol[i].type === 'empty' && shiftedCol[i - 1].type !== 'empty') {
+    //     pos = [(col), (i - 1)];
+    //   }
+    // }
+    //
+    // let lastFruit = streak[streak.length - 1][1];
+    // let base = (lastFruit * 80);
+    // let top = (pos[1] * 80);
+    // let dy = Math.abs(top - base);
 
-      // this.grid[col].unshift(new Fruit());
-    }
   }
 
   async initialRender() {
@@ -423,24 +419,13 @@ class Board {
     this.ctx.clearRect(0, 0, this.ctx.height, this.ctx.width);
     requestAnimationFrame(this.draw);
 
-    let images = [];
     for(let i = 0; i < this.grid.length; i++) {
       for(let j = 0; j < this.grid[i].length; j++) {
+        debugger
         let item = this.grid[i][j]
-        let image = item.createImage();
-        images.push(image);
+        item.draw(this.ctx);
       }
     }
-
-    images.forEach( (image) => {
-      this.ctx.save();
-      this.ctx.clearRect(image.xpos, image.ypos, 80, 80);
-      this.ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
-      this.ctx.restore();
-    });
-
-    
-
   }
 }
 
@@ -497,6 +482,12 @@ class EmptySpace {
     img.ypos = (this.pos[1] * 80);
     return img;
   }
+
+  draw(ctx) {
+    let image = this.createImage();
+    ctx.clearRect(image.xpos, image.ypos, 80, 80);
+    ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
+  }
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (EmptySpace);
@@ -548,8 +539,15 @@ class Fruit {
     return img;
   }
 
-  draw() {
+  shift() {
 
+  }
+
+  draw(ctx) {
+    debugger
+    let image = this.createImage();
+    ctx.clearRect(image.xpos, image.ypos, 80, 80);
+    ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
   }
 }
 
