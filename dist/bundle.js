@@ -203,16 +203,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const icons = {
-  carrot: './images/carrot.png',
-  blueberry: './images/blueberry.png',
-  pineapple: './images/pineapple-icon.png',
-  banana: './images/banana.png',
-  strawberry: './images/strawberry-icon.png',
-  kiwi: './images/kiwi-icon.png',
-  empty: './images/emptyspace.png'
-}
-
 class Board {
   constructor(ctx) {
     this.grid = new Array(6);
@@ -220,8 +210,6 @@ class Board {
       this.grid[i] = (new Array(6))
     }
     this.populate();
-
-    this.icons = icons;
     this.ctx = ctx;
     this.score = 0;
     this.shift = this.shift.bind(this);
@@ -232,7 +220,7 @@ class Board {
     for (let i = 0; i < this.grid.length; i++) {
       for (let j = 0; j < this.grid.length; j++) {
         let pos = [i, j]
-        this.grid[i][j] = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"](pos, this.ctx);
+        this.grid[i][j] = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"](pos);
       }
     }
     return this.grid;
@@ -384,7 +372,7 @@ class Board {
   eliminateStreak(streak) {
     for (let i = 0; i < streak.length; i++) {
       let pos = streak[i]
-      this.grid[pos[0]].splice(pos[1], 1, new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]());
+      this.grid[pos[0]].splice(pos[1], 1, new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]([pos[0], pos[1]]));
     }
 
     this.draw().then(this.shift(streak));
@@ -405,7 +393,7 @@ class Board {
     let top = (pos[1] * 80);
     let dy = Math.abs(top - base);
     for (let i = 0; i < streak.length; i++) {
-      _animation__WEBPACK_IMPORTED_MODULE_3__["default"].shift(base, dy, this.ctx);
+      // Animation.shift(base, dy, this.ctx);
 
       // this.grid[col].unshift(new Fruit());
     }
@@ -438,15 +426,9 @@ class Board {
     let images = [];
     for(let i = 0; i < this.grid.length; i++) {
       for(let j = 0; j < this.grid[i].length; j++) {
-        let img = new Image();
-
-        let fruitType = this.grid[i][j].type;
-        let source = this.icons[fruitType];
-
-        img.xpos = (i * 80);
-        img.ypos = (j * 80);
-        img.src = source;
-        images.push(img);
+        let item = this.grid[i][j]
+        let image = item.createImage();
+        images.push(image);
       }
     }
 
@@ -456,6 +438,9 @@ class Board {
       this.ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
       this.ctx.restore();
     });
+
+    
+
   }
 }
 
@@ -499,8 +484,18 @@ document.addEventListener("DOMContentLoaded", () => {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 class EmptySpace {
-  constructor() {
+  constructor(pos) {
     this.type = 'empty';
+    this.pos = pos;
+    this.vel = 0;
+  }
+
+  createImage() {
+    let img = new Image();
+    img.src = './images/emptyspace.png';
+    img.xpos = (this.pos[0] * 80);
+    img.ypos = (this.pos[1] * 80);
+    return img;
   }
 }
 
@@ -514,9 +509,52 @@ class EmptySpace {
   !*** ./lib/fruit.js ***!
   \**********************/
 /*! exports provided: default */
-/***/ (function(module, exports) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-throw new Error("Module parse failed: Unexpected keyword 'this' (38:7)\nYou may need an appropriate loader to handle this file type.\n|   }\n| \n>   draw(this.ctx) {\n|     \n|   }");
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+const DEFAULT = {
+  TYPE: [
+    "carrot",
+    "blueberry",
+    "kiwi",
+    "pineapple",
+    "strawberry",
+    "banana"]
+}
+
+const ICONS = {
+  carrot: './images/carrot.png',
+  blueberry: './images/blueberry.png',
+  pineapple: './images/pineapple-icon.png',
+  banana: './images/banana.png',
+  strawberry: './images/strawberry-icon.png',
+  kiwi: './images/kiwi-icon.png'
+}
+
+
+class Fruit {
+  constructor(pos) {
+    this.type = DEFAULT.TYPE[Math.floor(Math.random() * DEFAULT.TYPE.length)];;
+    this.pos = pos;
+    this.vel = 0;
+  }
+
+  createImage() {
+    let img = new Image();
+    img.src = ICONS[this.type]
+    img.xpos = (this.pos[0] * 80);
+    img.ypos = (this.pos[1] * 80);
+    return img;
+  }
+
+  draw() {
+
+  }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (Fruit);
+
 
 /***/ }),
 
