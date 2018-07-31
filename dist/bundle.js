@@ -225,12 +225,14 @@ class Board {
     this.ctx = ctx;
     this.score = 0;
     this.shift = this.shift.bind(this);
+    this.draw = this.draw.bind(this);
   }
 
   populate() { // returns populated grid
     for (let i = 0; i < this.grid.length; i++) {
       for (let j = 0; j < this.grid.length; j++) {
-        this.grid[i][j] = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]();
+        let pos = [i, j]
+        this.grid[i][j] = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"](pos, this.ctx);
       }
     }
     return this.grid;
@@ -260,14 +262,14 @@ class Board {
   }
 
   moveFruit(fromMove, toMove) { // too coupled?
-    if (this.isValidMove(fromMove, toMove) === true) {
+    if (this.isValidMove(fromMove, toMove)) {
       let firstVeg = this.grid[fromMove[0]][fromMove[1]];
       let secondVeg = this.grid[toMove[0]][toMove[1]];
 
       this.grid[toMove[0]][toMove[1]] = firstVeg;
       this.grid[fromMove[0]][fromMove[1]] = secondVeg;
 
-      if (this.foundStreak() === true) {
+      if (this.foundStreak()) {
         this.getStreak();
       } else {
         this.grid[toMove[0]][toMove[1]] = secondVeg;
@@ -283,11 +285,7 @@ class Board {
     let transGrid = _utility__WEBPACK_IMPORTED_MODULE_2__["default"].transpose(this.grid);
     let check2 = this.horizontalCheck(transGrid);
 
-    if (check1 || check2) {
-      return true;
-    } else {
-      return false;
-    }
+    return (check1 || check2);
   }
 
   getStreak() {
@@ -389,7 +387,7 @@ class Board {
       this.grid[pos[0]].splice(pos[1], 1, new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]());
     }
 
-    this.initialRender();
+    this.draw().then(this.shift(streak));
   }
 
   shift(streak) {
@@ -409,7 +407,7 @@ class Board {
     for (let i = 0; i < streak.length; i++) {
       _animation__WEBPACK_IMPORTED_MODULE_3__["default"].shift(base, dy, this.ctx);
 
-      this.grid[col].unshift(new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]());
+      // this.grid[col].unshift(new Fruit());
     }
   }
 
@@ -417,15 +415,9 @@ class Board {
     let images = [];
     for(let i = 0; i < this.grid.length; i++) {
       for(let j = 0; j < this.grid[i].length; j++) {
-        let img = new Image();
-
-        let fruitType = this.grid[i][j].type;
-        let source = this.icons[fruitType];
-
-        img.xpos = (i * 80);
-        img.ypos = (j * 80);
-        img.src = source;
-        images.push(img)
+        let fruit = this.grid[i][j];
+        let fruitImg = fruit.createImage();
+        images.push(fruitImg);
       }
     }
 
@@ -439,8 +431,10 @@ class Board {
     });
   }
 
-  draw() {
-    debugger
+  async draw() {
+    this.ctx.clearRect(0, 0, this.ctx.height, this.ctx.width);
+    requestAnimationFrame(this.draw);
+
     let images = [];
     for(let i = 0; i < this.grid.length; i++) {
       for(let j = 0; j < this.grid[i].length; j++) {
@@ -520,28 +514,9 @@ class EmptySpace {
   !*** ./lib/fruit.js ***!
   \**********************/
 /*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ (function(module, exports) {
 
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-const DEFAULT = {
-  TYPE: [
-    "carrot",
-    "blueberry",
-    "kiwi",
-    "pineapple",
-    "strawberry",
-    "banana"]
-}
-
-class Fruit {
-  constructor() {
-    this.type = DEFAULT.TYPE[Math.floor(Math.random() * DEFAULT.TYPE.length)];
-  }
-}
-
-/* harmony default export */ __webpack_exports__["default"] = (Fruit);
-
+throw new Error("Module parse failed: Unexpected keyword 'this' (38:7)\nYou may need an appropriate loader to handle this file type.\n|   }\n| \n>   draw(this.ctx) {\n|     \n|   }");
 
 /***/ }),
 
@@ -668,7 +643,7 @@ class GameView {
   }
 
   start() {
-    this.board.initialRender(this.ctx).then( () => {
+    this.board.initialRender().then( () => {
       this.board.getStreak();
     });
     this.game.play();
