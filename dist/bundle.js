@@ -277,138 +277,143 @@ class Board {
   }
 
   getStreak() {
-    let streak;
     if (this.verticalCheck(this.grid)) {
-      streak = this.verticalCheck(this.grid);
-      this.eliminateStreak(streak);
+      let vertStreak = this.verticalCheck(this.grid);
+      this.eliminateStreak(vertStreak);
+      vertStreak = [];
     }
 
-    let transGrid = _utility__WEBPACK_IMPORTED_MODULE_2__["default"].transpose(this.grid);
-    if (this.horizontalCheck(transGrid)) {
-      streak = this.horizontalCheck(transGrid);
-      this.eliminateStreak(streak);
+    if (this.horizontalCheck(this.grid)) {
+      let horzStreak = this.horizontalCheck(this.grid);
+      this.eliminateStreak(horzStreak);
     }
   }
 
   verticalCheck(grid) {
-    let currentStreak = [];
+    let currentVertStreak = [];
 
     for (let i = 0 ; i < grid.length; i++) {
-      for (let j = 1; j < grid[i].length; j++) {
-
-        if (currentStreak.length === 0) {
-          currentStreak.push([i, (j - 1)]);
+      for (let j = 4; j < grid[i].length; j++) {
+        if (currentVertStreak.length === 0 && this.grid[i][(j -1)].type != 'empty') {
+          currentVertStreak.push([i, (j - 4)]);
         }
 
         if (grid[i][j].type === grid[i][(j - 1)].type){
-          currentStreak.push([i, j]);
+          currentVertStreak.push([i, (j - 3)]);
         } else {
-          if (grid[i][j].type !== grid[i][(j - 1)].type) {
-
-            if (currentStreak.length >= 3) {
+            if (currentVertStreak.length >= 3) {
               this.score += 50;
               $(".player-score").text(this.score);
-              return currentStreak;
+              return currentVertStreak;
+            } else {
+              currentVertStreak = [];
             }
-
-            currentStreak = [];
-          }
         }
 
-        if (j === grid.length - 1) {
-          if (currentStreak.length >= 3) {
+        if (j === grid[i].length - 1) {
+          if (currentVertStreak.length >= 3) {
             this.score += 50;
             $(".player-score").text(this.score);
-            return currentStreak;
+            return currentVertStreak;
+          } else {
+            currentVertStreak = [];
           }
         }
       }
     }
+    return false;
   }
 
   horizontalCheck(grid) {
-    let currentStreak = [];
-    for (let i = 0 ; i < grid.length; i++) {
-      for (let j = 1; j < grid[i].length; j++) {
+    let currentHorzStreak = [];
+    for (let j = 3; j < 9; j++) {
+      for (let i = 1; i < 6; i++) {
 
-        if (currentStreak.length === 0) {
-          currentStreak.push([i, (j - 1)]);
+        if (currentHorzStreak.length === 0 && grid[(i - 1)][j].type != 'empty') {
+          currentHorzStreak.push([(i - 1), (j - 3)]);
         }
-        if (grid[i][j].type === grid[i][(j - 1)].type){
-          currentStreak.push([i, j]);
+        if (grid[i][j].type === grid[(i - 1)][j].type){
+          currentHorzStreak.push([i, (j - 3)]);
         } else {
-          if (grid[i][j].type !== grid[i][(j - 1)].type) {
-
-            if (currentStreak.length >= 3) {
-              let reversedStreak = currentStreak.map ((pos) => {
-                return [pos[1], pos[0]];
-              });
-
+            if (currentHorzStreak.length >= 3) {
               this.score += 50;
               $(".player-score").text(this.score);
-              return reversedStreak;
+              return currentHorzStreak;
+            } else {
+              currentHorzStreak = [];
             }
-
-            currentStreak = [];
-          }
         }
 
-        if (j === grid.length - 1) {
-          if (currentStreak.length >= 3) {
-            let reversedStreak = currentStreak.map ((pos) => {
-              return [pos[1], pos[0]]
-            });
-
+        if (i === grid.length - 1) {
+          if (currentHorzStreak.length >= 3) {
             this.score += 50;
             $(".player-score").text(this.score);
-            return reversedStreak;
+            return currentHorzStreak;
+          } else {
+            currentHorzStreak = [];
           }
         }
       }
     }
+    return false;
   }
 
   eliminateStreak(streak) {
-    debugger
     for (let i = 0; i < streak.length; i++) {
       let pos = streak[i]
-      this.grid[pos[0]].unshift(new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]())
-      this.grid[pos[0]].splice(pos[1], 1, new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]([pos[0], pos[1]]));
+      this.grid[pos[0]].splice((pos[1] + 3), 1, new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]([pos[0], (pos[1])]));
     }
 
-    this.draw();
+    this.shift();
   }
 
-  shift(streak) {
-    // let col = streak[0][0];
-    //
-    // for (let i = 0; i < streak.length; i++) {
-    //   col.unshift(new Fruit())
+  shift() {
+    let leadPos;
+    let bottomPos;
+    for (let i = 0; i < this.grid.length; i++) {
+      for (let j = 0; j < this.grid[i].length; j++) {
+        if (this.grid[i][j].type === 'empty') {
+          let falling = [];
+          for (let k = 0; k < j; k++) {
+            let fallingFruit = this.grid[i][k];
+            fallingFruit.falling = true;
+            fallingFruit.move();
+            debugger
+            falling.push(fallingFruit);
+          }
 
-    // let shiftedCol = this.grid[col];
-    // let pos;
-    // for (let i = 1; i < shiftedCol.length; i++) {
-    //   if (shiftedCol[i].type === 'empty' && shiftedCol[i - 1].type !== 'empty') {
-    //     pos = [(col), (i - 1)];
-    //   }
-    // }
-    //
-    // let lastFruit = streak[streak.length - 1][1];
-    // let base = (lastFruit * 80);
-    // let top = (pos[1] * 80);
-    // let dy = Math.abs(top - base);
+          let last = falling[falling.length - 1];
+          last.lead = true;
+          leadPos = ((last.pos[1] * 80) + 80);
+        } else if (this.grid[i][j].type === 'empty' && this.grid[i][j + 1].type != 'empty'){
+          let bottom = this.grid[i][j + 1];
+          bottomPos = (bottom.pos[1] * 80);
+        }
+      }
+    }
 
   }
 
-  async draw() {
+  draw() {
     this.ctx.clearRect(0, 0, this.ctx.height, this.ctx.width);
     requestAnimationFrame(this.draw);
 
+    let imageCount = 0;
     for(let i = 0; i < this.grid.length; i++) {
       for(let j = 3; j < this.grid[i].length; j++) {
-        let item = this.grid[i][j]
+        let item = this.grid[i][j];
         item.draw(this.ctx);
+        // if (item.type != 'empty') {
+        //   debugger
+        //   item.move();
+        // }
+
+        imageCount++;
       }
+    }
+
+    if (imageCount >= 36) {
+      this.getStreak();
     }
   }
 }
@@ -515,6 +520,10 @@ class Fruit {
     this.pos = pos;
     this.vel = 0;
     this.falling = false;
+    this.xpos = (pos[0] * 80);
+    this.ypos = (pos[1] * 80);
+    this.lead = false;
+    this.move = this.move.bind(this);
   }
 
   createImage() {
@@ -528,13 +537,19 @@ class Fruit {
 
   draw(ctx) {
     let image = this.createImage();
+    ctx.save();
     ctx.clearRect(image.xpos, image.ypos, 80, 80);
     ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
+    ctx.restore();
   }
 
-  move(ctx) {
+  move() {
+    // this.ypos += this.vel;
     if (this.falling) {
-      pos[1] += vel;
+      this.ypos += 5;
+      debugger
+    } else {
+      this.ypos += 0;
     }
   }
 }
@@ -667,9 +682,7 @@ class GameView {
   }
 
   start() {
-    this.board.draw().then( () => {
-      this.board.getStreak();
-    });
+    this.board.draw();
     this.game.play();
   }
 }
