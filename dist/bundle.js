@@ -86,105 +86,6 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./lib/animation.js":
-/*!**************************!*\
-  !*** ./lib/animation.js ***!
-  \**************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _empty_space__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./empty_space */ "./lib/empty_space.js");
-
-
-const Animation = {
-
-  // preShake(ctx) {
-  //   ctx.save();
-  //   let dx = Math.random() * 10;
-  //   let dy = Math.random() * 10;
-  //   ctx.translate(dx, dy);
-  // },
-  //
-  // postShake(ctx) {
-  //   ctx.restore();
-  // },
-  //
-  // shake(ctx, board) {
-  //   ctx.clearRect(0, 0, 480, 480);
-  //   Animation.preShake(ctx);
-  //   board.redraw(ctx);
-  //   Animation.postShake(ctx);
-  //   requestAnimationFrame(Animation.shake(ctx, board));
-  // },
-
-//
-  // swap(x1, x2, y1, y2, ctx, board) {
-  //   return  () => {
-  //     let shiftx = x1 - x2;
-  //     let shifty = y1 - y2;
-  //
-  //
-  //     let dx;
-  //     if (x1 > x2) {
-  //       dx = -2;
-  //     } else if (x1 < x2) {
-  //       dx = 2;
-  //     } else {
-  //       dx = 0;
-  //     }
-  //
-  //     let dy;
-  //     if (y1 > y2) {
-  //       dy = -2;
-  //     } else if (y1 < y2) {
-  //       dy = 2;
-  //     } else {
-  //       dy = 0;
-  //     }
-  //
-  //
-  //
-  //
-  //     if (dx === 0 && dy === 0) {
-  //       return;
-  //     }
-  //
-  //     x1 += dx;
-  //     y1 += dy;
-  //     x2 -= dx;
-  //     y2 -= dy;
-  //
-  //     ctx.beginPath();
-  //     ctx.save()
-  //     ctx.translate((dx), (dy));
-  //     board.redraw(x1, oldXPos, y1, oldYPos, ctx);
-  //     ctx.restore();
-  //     requestAnimationFrame(Animation.swap(x1, x2, y1, y2, ctx, board));
-  //   }
-  // }
-
-
-  shift(base, dy, ctx) {
-    if (dy >= base) {
-      return;
-    }
-
-    dy += (dy / 60);
-    ctx.save();
-    ctx.beginPath();
-    ctx.translate(0, (dy / 60));
-    ctx.restore();
-    requestAnimationFrame(Animation.shift(base, dy, ctx));
-  }
-}
-
-/* harmony default export */ __webpack_exports__["default"] = (Animation);
-
-
-/***/ }),
-
 /***/ "./lib/board.js":
 /*!**********************!*\
   !*** ./lib/board.js ***!
@@ -196,9 +97,6 @@ const Animation = {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _fruit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./fruit */ "./lib/fruit.js");
 /* harmony import */ var _empty_space__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./empty_space */ "./lib/empty_space.js");
-/* harmony import */ var _utility__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utility */ "./lib/utility.js");
-/* harmony import */ var _animation__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./animation */ "./lib/animation.js");
-
 
 
 
@@ -222,10 +120,12 @@ class Board {
     for (let i = 0; i < this.grid.length; i++) {
       for (let j = 0; j < this.grid[i].length; j++) {
         let pos = [i, j]
-        this.grid[i][j] = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]([i, (j - 3)]);
+        this.grid[i][j] = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]([i, j]);
       }
     }
-    return this.grid;
+    while (this.findAndRemoveStreaks()) {
+
+    }
   }
 
   isValidMove(fromMove, toMove) {
@@ -255,13 +155,12 @@ class Board {
     if (this.isValidMove(fromMove, toMove)) {
       let firstVeg = this.grid[fromMove[0]][fromMove[1]];
       let secondVeg = this.grid[toMove[0]][toMove[1]];
-
+      debugger
       this.grid[toMove[0]][toMove[1]] = firstVeg;
       this.grid[fromMove[0]][fromMove[1]] = secondVeg;
+      debugger
 
-      if (this.foundStreak()) {
-        this.getStreak();
-      } else {
+      if (!this.findAndRemoveStreaks()) {
         this.grid[toMove[0]][toMove[1]] = secondVeg;
         this.grid[fromMove[0]][fromMove[1]] = firstVeg;
       }
@@ -270,93 +169,86 @@ class Board {
     }
   }
 
-  foundStreak() {
-    let check1 = this.verticalCheck();
-    let check2 = this.horizontalCheck();
-
-    return (check1 || check2);
-  }
-
-  getStreak() {
+  findAndRemoveStreaks() {
+    let foundStreak = false;
     let vertStreak = this.verticalCheck();
-    if (vertStreak) {
-      this.eliminateStreak(vertStreak);
+    let horzStreak = this.horizontalCheck();
+
+    while (vertStreak || horzStreak) {
+      if (vertStreak) this.eliminateStreak(vertStreak);
+      if (horzStreak) this.eliminateStreak(horzStreak);
+      vertStreak = this.verticalCheck();
+      horzStreak = this.horizontalCheck();
+      foundStreak = true;
     }
 
-    let horzStreak = this.horizontalCheck();
-    if (horzStreak) {
-      this.eliminateStreak(horzStreak);
-    }
+    return foundStreak;
   }
 
   verticalCheck() {
-    let currentVertStreak = [];
+    let vertStreak = [];
+    for (let i = 0; i < this.grid.length; i++) {
+      for (let j = 3; j < this.grid[0].length; j++) {
+        const streakLength = vertStreak.length;
+        const currFruit = this.grid[i][j];
 
-    for (let i = 0 ; i < this.grid.length; i++) {
-      for (let j = 4; j < this.grid[i].length; j++) {
-        if (currentVertStreak.length === 0 && this.grid[i][(j - 1)].type !== 'empty') {
-          currentVertStreak.push([i, (j - 4)]);
-        }
-
-        if (this.grid[i][j].type === this.grid[i][(j - 1)].type){
-          currentVertStreak.push([i, (j - 3)]);
+        if (streakLength === 0 && currFruit.type !== 'empty') {
+          vertStreak.push([i, j]);
         } else {
-            if (currentVertStreak.length >= 3) {
-              this.score += 50;
-              return currentVertStreak;
-            } else {
-              currentVertStreak = [];
-            }
-        }
-
-        if (j === this.grid[i].length - 1) {
-          if (currentVertStreak.length >= 3) {
-            this.score += 50;
-            return currentVertStreak;
+          const lastPos = vertStreak[streakLength - 1];
+          const lastFruitType = this.grid[lastPos[0]][lastPos[1]].type;
+          if (lastFruitType === currFruit.type) {
+            vertStreak.push([i, j]);
+          } else if (streakLength >= 3) {
+            debugger
+            return vertStreak;
           } else {
-            currentVertStreak = [];
+            vertStreak = [];
           }
         }
+      }
+      if (vertStreak.length >= 3) {
+        debugger
+        return vertStreak;
+      } else {
+        vertStreak = [];
       }
     }
   }
 
   horizontalCheck() {
-    let currentHorzStreak = [];
+    let horzStreak = [];
     for (let j = 3; j < this.grid[0].length; j++) {
-      for (let i = 1; i < this.grid.length; i++) {
-        if (currentHorzStreak.length === 0 && this.grid[(i - 1)][j].type !== 'empty') {
-          currentHorzStreak.push([(i - 1), (j - 3)]);
-        }
+      for (let i = 0; i < this.grid.length; i++) {
+        const streakLength = horzStreak.length;
+        const currFruit = this.grid[i][j];
 
-        if (this.grid[i][j].type === this.grid[(i - 1)][j].type){
-          currentHorzStreak.push([i, (j - 3)]);
+        if (streakLength === 0 && currFruit.type !== 'empty') {
+          horzStreak.push([i, j]);
         } else {
-          if (currentHorzStreak.length >= 3) {
-            this.score += 50;
-            return currentHorzStreak;
+          const lastPos = horzStreak[streakLength - 1];
+          const lastFruitType = this.grid[lastPos[0]][lastPos[1]].type;
+          if (lastFruitType === currFruit.type) {
+            horzStreak.push([i, j]);
+          } else if (streakLength >= 3) {
+            return horzStreak;
           } else {
-            currentHorzStreak = [];
+            horzStreak = [];
           }
         }
-
-        if (i === this.grid[0].length - 1) {
-          if (currentHorzStreak.length >= 3) {
-            this.score += 50;
-            return currentHorzStreak;
-          } else {
-            currentHorzStreak = [];
-          }
-        }
+      }
+      if (horzStreak.length >= 3) {
+        return horzStreak;
+      } else {
+        horzStreak = [];
       }
     }
   }
 
   eliminateStreak(streak) {
-    // debugger
     for (let i = 0; i < streak.length; i++) {
-      let pos = streak[i]
-      this.grid[pos[0]].splice((pos[1] + 3), 1, new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]([pos[0], (pos[1])]));
+      const pos = streak[i]
+      this.grid[pos[0]][pos[1]] = new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]([pos[0], pos[1]]);
     }
 
     this.shift();
@@ -364,31 +256,21 @@ class Board {
 
   shift() {
     for (let i = 0; i < this.grid.length; i++) {
-      for (let j = 0; j < this.grid[i].length - 1; j++) {
+      for (let j = 3; j < this.grid[i].length; j++) {
         let column = this.grid[i];
         let currentItem = this.grid[i][j];
 
-
         if (currentItem.type === 'empty') {
-          _utility__WEBPACK_IMPORTED_MODULE_2__["default"].removeA(column, currentItem);
-          let newFruit = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]([i, j - 3]);
-          column.unshift(newFruit);
-
-          for (let k = 0; k <= j; k++) {
-            let fallingFruit = column[k];
-            fallingFruit.pos = ([i, (k - 3)]);
-            if (!this.falling.includes(fallingFruit)) {
-              this.falling.unshift(fallingFruit);
-            }
+          debugger
+          for (let k = j; k - 1 >= 0; k--) {
+            const shiftingFruit = this.grid[i][k - 1];
+            shiftingFruit.falling = true;
+            shiftingFruit.setPos([i, k]);
+            this.grid[i][k] = shiftingFruit;
           }
+          column.unshift(new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]([i, 0]));
         }
       }
-    }
-
-    if (this.falling.length > 0) {
-      this.falling.forEach ((item) => {
-        item.falling = true;
-      });
     }
   }
 
@@ -411,8 +293,6 @@ class Board {
       items.forEach ((item) => {
         item.move();
       });
-
-      this.getStreak();
     }
   }
 }
@@ -536,9 +416,15 @@ class Fruit {
     this.vel = 0;
     this.falling = false;
     this.xpos = (pos[0] * 80);
-    this.ypos = (pos[1] * 80);
+    this.ypos = ((pos[1] - 3) * 80);
     this.lead = false;
     this.move = this.move.bind(this);
+  }
+
+  setPos(pos) {
+    this.pos = pos;
+    this.xpos = pos[0] * 80;
+    this.ypos = (pos[1] - 3) * 80;
   }
 
   createImage() {
@@ -561,10 +447,10 @@ class Fruit {
   move() {
     this.ypos += this.vel;
     if (this.falling) {
-      if (this.ypos === (this.pos[1] * 80)) {
+      if (this.ypos === ((this.pos[1] - 3) * 80)) {
         this.vel = 0;
       } else {
-        this.vel = (((this.pos[1] * 80) - this.ypos) / 60);
+        this.vel = ((((this.pos[1] - 3) * 80) - this.ypos) / 60);
       }
     } else {
       this.vel = 0;
@@ -639,17 +525,17 @@ class Game {
     };
 
     if (x > 0 && x < 80) {
-      pos.push(0)
+      pos.push(3)
     } else if (x >= 80 && x < 160) {
-      pos.push(1);
-    } else if (x >= 160 && x < 240) {
-      pos.push(2);
-    } else if (x >= 240 && x < 320) {
-      pos.push(3);
-    } else if (x >= 320 && x < 400) {
       pos.push(4);
-    } else {
+    } else if (x >= 160 && x < 240) {
       pos.push(5);
+    } else if (x >= 240 && x < 320) {
+      pos.push(6);
+    } else if (x >= 320 && x < 400) {
+      pos.push(7);
+    } else {
+      pos.push(8);
     };
 
     return pos;
@@ -706,38 +592,6 @@ class GameView {
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (GameView);
-
-
-/***/ }),
-
-/***/ "./lib/utility.js":
-/*!************************!*\
-  !*** ./lib/utility.js ***!
-  \************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-const Utility = {
-
-  transpose(array) {
-    return array[0].map((col, i) => array.map(row => row[i]));
-  },
-
-  removeA(arr) {
-    let what, a = arguments, L = a.length, ax;
-    while (L > 1 && arr.length) {
-      what = a[--L];
-      while ((ax= arr.indexOf(what)) !== -1) {
-        arr.splice(ax, 1);
-      }
-    }
-    return arr;
-  }
-};
-
-/* harmony default export */ __webpack_exports__["default"] = (Utility);
 
 
 /***/ })
