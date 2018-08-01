@@ -123,6 +123,7 @@ class Board {
         this.grid[i][j] = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]([i, j]);
       }
     }
+
     while (this.findAndRemoveStreaks()) {
 
     }
@@ -155,11 +156,10 @@ class Board {
     if (this.isValidMove(fromMove, toMove)) {
       let firstVeg = this.grid[fromMove[0]][fromMove[1]];
       let secondVeg = this.grid[toMove[0]][toMove[1]];
-      debugger
+
       this.grid[toMove[0]][toMove[1]] = firstVeg;
       this.grid[fromMove[0]][fromMove[1]] = secondVeg;
       debugger
-
       if (!this.findAndRemoveStreaks()) {
         this.grid[toMove[0]][toMove[1]] = secondVeg;
         this.grid[fromMove[0]][fromMove[1]] = firstVeg;
@@ -173,7 +173,7 @@ class Board {
     let foundStreak = false;
     let vertStreak = this.verticalCheck();
     let horzStreak = this.horizontalCheck();
-
+    debugger
     while (vertStreak || horzStreak) {
       if (vertStreak) this.eliminateStreak(vertStreak);
       if (horzStreak) this.eliminateStreak(horzStreak);
@@ -181,7 +181,7 @@ class Board {
       horzStreak = this.horizontalCheck();
       foundStreak = true;
     }
-
+    debugger
     return foundStreak;
   }
 
@@ -191,7 +191,6 @@ class Board {
       for (let j = 3; j < this.grid[0].length; j++) {
         const streakLength = vertStreak.length;
         const currFruit = this.grid[i][j];
-
         if (streakLength === 0 && currFruit.type !== 'empty') {
           vertStreak.push([i, j]);
         } else {
@@ -200,7 +199,7 @@ class Board {
           if (lastFruitType === currFruit.type) {
             vertStreak.push([i, j]);
           } else if (streakLength >= 3) {
-            debugger
+            this.score += 50;
             return vertStreak;
           } else {
             vertStreak = [];
@@ -208,12 +207,14 @@ class Board {
         }
       }
       if (vertStreak.length >= 3) {
-        debugger
+        this.score += 50;
         return vertStreak;
       } else {
         vertStreak = [];
       }
     }
+
+    $(".player-score").text(this.score);
   }
 
   horizontalCheck() {
@@ -231,6 +232,7 @@ class Board {
           if (lastFruitType === currFruit.type) {
             horzStreak.push([i, j]);
           } else if (streakLength >= 3) {
+            this.score += 50;
             return horzStreak;
           } else {
             horzStreak = [];
@@ -238,37 +240,41 @@ class Board {
         }
       }
       if (horzStreak.length >= 3) {
+        this.score += 50;
+
         return horzStreak;
       } else {
         horzStreak = [];
       }
     }
+    $(".player-score").text(this.score);
   }
 
   eliminateStreak(streak) {
+    debugger
     for (let i = 0; i < streak.length; i++) {
       const pos = streak[i]
       this.grid[pos[0]][pos[1]] = new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]([pos[0], pos[1]]);
     }
-
+    debugger
     this.shift();
   }
 
   shift() {
+    debugger
     for (let i = 0; i < this.grid.length; i++) {
       for (let j = 3; j < this.grid[i].length; j++) {
         let column = this.grid[i];
         let currentItem = this.grid[i][j];
 
         if (currentItem.type === 'empty') {
-          debugger
           for (let k = j; k - 1 >= 0; k--) {
             const shiftingFruit = this.grid[i][k - 1];
             shiftingFruit.falling = true;
+            shiftingFruit.lastYpos = [i, (k - 1)];
             shiftingFruit.setPos([i, k]);
             this.grid[i][k] = shiftingFruit;
           }
-          column.unshift(new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]([i, 0]));
         }
       }
     }
@@ -361,17 +367,16 @@ class EmptySpace {
   }
 
   move() {
-    this.ypos += this.vel;
-    if (this.falling) {
-      debugger
-      if (this.ypos === (this.pos[1] * 80)) {
-        this.vel = 0;
-      } else {
-        this.vel = (((this.pos[1] * 80) - this.ypos) / 60);
-      }
-    } else {
-      this.vel = 0;
-    }
+    // this.ypos += this.vel;
+    // if (this.falling) {
+    //   if (this.ypos === (this.pos[1] * 80)) {
+    //     this.vel = 0;
+    //   } else {
+    //     this.vel = (((this.pos[1] * 80) - this.ypos) / 60);
+    //   }
+    // } else {
+    //   this.vel = 0;
+    // }
   }
 }
 
@@ -415,9 +420,9 @@ class Fruit {
     this.pos = pos;
     this.vel = 0;
     this.falling = false;
-    this.xpos = (pos[0] * 80);
-    this.ypos = ((pos[1] - 3) * 80);
-    this.lead = false;
+    this.xpos = pos[0] * 80;
+    this.ypos = (pos[1] - 3) * 80;
+    this.lastYpos = (pos[1] - 3) * 80;
     this.move = this.move.bind(this);
   }
 
@@ -445,12 +450,13 @@ class Fruit {
   }
 
   move() {
-    this.ypos += this.vel;
+    this.lastYpos += this.vel;
+    
     if (this.falling) {
-      if (this.ypos === ((this.pos[1] - 3) * 80)) {
+      if (this.lastYpos === this.ypos) {
         this.vel = 0;
       } else {
-        this.vel = ((((this.pos[1] - 3) * 80) - this.ypos) / 60);
+        this.vel = ((this.ypos - this.lastYpos) / 60);
       }
     } else {
       this.vel = 0;
@@ -490,8 +496,7 @@ class Game {
     $(".moves-left").text(`${this.movesLeft}`);
   }
 
-  play() {
-  }
+  play() {}
 
   checkWon() {
     if (this.movesLeft > 0 && this.board.score >= this.objectiveScore ) {
