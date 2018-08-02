@@ -123,7 +123,7 @@ class Board {
       }
     }
 
-    this.findAndRemoveStreaks();  
+    this.findAndRemoveStreaks();
   }
 
   isValidMove(fromMove, toMove) {
@@ -333,15 +333,13 @@ class Board {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game */ "./lib/game.js");
-/* harmony import */ var _game_view__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_view */ "./lib/game_view.js");
-
 
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvasEl = document.getElementsByTagName("canvas")[0];
 
   const ctx = canvasEl.getContext("2d");
-  new _game_view__WEBPACK_IMPORTED_MODULE_1__["default"](ctx).start();
+  new _game__WEBPACK_IMPORTED_MODULE_0__["default"](ctx).start();
 });
 
 
@@ -493,32 +491,35 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class Game {
-  constructor(board) {
+  constructor(ctx) {
     this.objectiveScore = 1000;
-    this.movesLeft = 5;
-    this.board = board;
+    this.movesLeft = 3;
+    this.board = new _board__WEBPACK_IMPORTED_MODULE_0__["default"](ctx);
     this.prevMove = null;
-
+    this.winner = false;
     this.getMove = this.getMove.bind(this);
     this.handleMove = this.handleMove.bind(this);
 
     $("#canvas").on('click', this.handleMove);
     $(".target-score").text(`Target: ${this.objectiveScore}`);
+  }
+
+  start() {
+    this.board.draw();
+    this.movesLeft = 3;
     $(".moves-left").text(`${this.movesLeft}`);
   }
 
-  play() {}
 
   checkWon() {
     if (this.movesLeft > 0 && this.board.score >= this.objectiveScore ) {
-      alert('yerr')
-      this.play();
+      this.winner = true;
+      this.gameOver();
     } else if (this.movesLeft === 0 && this.board.score !== this.objectiveScore) {
-      alert('naa boi')
-      this.play();
+      this.gameOver();
     } else if (this.movesLeft === 0 && this.board.score === this.objectiveScore) {
-      alert('yerr')
-      this.play();
+      this.winner = true;
+      this.gameOver();
     } else {
       return null;
     }
@@ -575,42 +576,22 @@ class Game {
     }
   }
 
+  gameOver() {
+    this.movesLeft = 0;
+    $(".moves-left").text(`${this.movesLeft}`);
+
+    if (this.winner) {
+      console.log('yerrr')
+      this.start();
+    } else {
+      console.log('nerrr')
+      this.start();
+    }
+  }
 }
 
 
 /* harmony default export */ __webpack_exports__["default"] = (Game);
-
-
-/***/ }),
-
-/***/ "./lib/game_view.js":
-/*!**************************!*\
-  !*** ./lib/game_view.js ***!
-  \**************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _board__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./board */ "./lib/board.js");
-/* harmony import */ var _game__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game */ "./lib/game.js");
-
-
-
-class GameView {
-  constructor(ctx) {
-    this.ctx = ctx;
-    this.board = new _board__WEBPACK_IMPORTED_MODULE_0__["default"](ctx);
-    this.game = new _game__WEBPACK_IMPORTED_MODULE_1__["default"](this.board);
-  }
-
-  start() {
-    this.board.draw();
-    this.game.play();
-  }
-}
-
-/* harmony default export */ __webpack_exports__["default"] = (GameView);
 
 
 /***/ })
