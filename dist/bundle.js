@@ -499,8 +499,10 @@ class Game {
     this.board = new _board__WEBPACK_IMPORTED_MODULE_0__["default"](ctx);
     this.prevMove = null;
     this.winner = false;
+    this.rules = false;
     this.getMove = this.getMove.bind(this);
     this.handleMove = this.handleMove.bind(this);
+    this.openRules = this.openRules.bind(this);
 
     $("#canvas").on('click', this.handleMove);
     $(".target-score").text(`Target: ${this.objectiveScore}`);
@@ -589,6 +591,10 @@ class Game {
       console.log('nerrr')
       this.start();
     }
+  }
+
+  openRules() {
+    $(".rules").addClass("rules-not-hidden");
   }
 }
 
