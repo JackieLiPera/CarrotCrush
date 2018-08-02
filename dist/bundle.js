@@ -103,13 +103,13 @@ __webpack_require__.r(__webpack_exports__);
 
 class Board {
   constructor(ctx) {
+    this.score = 0;
     this.grid = new Array(6);
     for (let i = 0; i < this.grid.length; i ++) {
-      this.grid[i] = (new Array(9))
+      this.grid[i] = (new Array(11))
     }
     this.populate();
     this.ctx = ctx;
-    this.score = 0;
     this.shift = this.shift.bind(this);
     this.draw = this.draw.bind(this);
     this.falling = [];
@@ -124,28 +124,27 @@ class Board {
       }
     }
 
-    while (this.findAndRemoveStreaks()) {
-
-    }
+    this.findAndRemoveStreaks();
   }
 
   isValidMove(fromMove, toMove) {
-    let xPos1 = fromMove[0];
-    let xPos2 = toMove[0];
-    let yPos1 = fromMove[1];
-    let yPos2 = toMove[1];
-
-    if ((xPos1 === 0) && (xPos2 !== 0 && xPos2 !== 1)) {
+    const col1 = fromMove[0];
+    const col2 = toMove[0];
+    const row1 = fromMove[1];
+    const row2 = toMove[1];
+    const lastCol = (this.grid.length - 1);
+    const lastRow = (this.grid[0].length - 1);
+    if ((col1 === 0) && (col2 !== 0 && col2 !== 1)) {
       return false;
-    } else if ((xPos1 === this.grid.length) && (xPos2 !== xPos1 - 1) && (xPos2 !== this.grid.length)) {
+    } else if ((col1 === lastCol) && (col2 !== col1 - 1) && (col2 !== lastCol)) {
       return false;
-    } else if ((yPos1 === 0) && (yPos2 !== yPos1 + 1) && (yPos2 !== 0)) {
+    } else if ((row1 === 5) && (row2 !== row1 + 1) && (row2 !== 5)) {
       return false;
-    } else if ((yPos1 === this.grid.length) && (yPos2 !== yPos1 - 1) && (yPos2 !== this.grid.length)) {
+    } else if ((row1 === lastRow) && (row2 !== row1 - 1) && (row2 !== lastRow)) {
       return false;
-    } else if ((xPos2 < (xPos1 - 1)) || (xPos2 > xPos1 + 1)) {
+    } else if ((col2 < col1 - 1) || (col2 > col1 + 1)) {
       return false;
-    } else if ((yPos2 < yPos1 - 1) || (yPos2 > yPos1 + 1)) {
+    } else if ((row2 < row1 - 1) || (row2 > row1 + 1)) {
       return false;
     } else {
       return true;
@@ -154,41 +153,38 @@ class Board {
 
   moveFruit(fromMove, toMove) {
     if (this.isValidMove(fromMove, toMove)) {
-      let firstVeg = this.grid[fromMove[0]][fromMove[1]];
-      let secondVeg = this.grid[toMove[0]][toMove[1]];
+      this.swap(fromMove, toMove);
 
-      this.grid[toMove[0]][toMove[1]] = firstVeg;
-      this.grid[fromMove[0]][fromMove[1]] = secondVeg;
-      debugger
       if (!this.findAndRemoveStreaks()) {
-        this.grid[toMove[0]][toMove[1]] = secondVeg;
-        this.grid[fromMove[0]][fromMove[1]] = firstVeg;
+        this.swap(fromMove, toMove);
       }
     } else {
-        alert('Invalid move')
+        alert('Invalid move');
     }
   }
 
   findAndRemoveStreaks() {
+
     let foundStreak = false;
     let vertStreak = this.verticalCheck();
     let horzStreak = this.horizontalCheck();
-    debugger
+
     while (vertStreak || horzStreak) {
+
       if (vertStreak) this.eliminateStreak(vertStreak);
       if (horzStreak) this.eliminateStreak(horzStreak);
       vertStreak = this.verticalCheck();
       horzStreak = this.horizontalCheck();
       foundStreak = true;
     }
-    debugger
+
     return foundStreak;
   }
 
   verticalCheck() {
     let vertStreak = [];
     for (let i = 0; i < this.grid.length; i++) {
-      for (let j = 3; j < this.grid[0].length; j++) {
+      for (let j = 5; j < this.grid[0].length; j++) {
         const streakLength = vertStreak.length;
         const currFruit = this.grid[i][j];
         if (streakLength === 0 && currFruit.type !== 'empty') {
@@ -199,7 +195,7 @@ class Board {
           if (lastFruitType === currFruit.type) {
             vertStreak.push([i, j]);
           } else if (streakLength >= 3) {
-            this.score += 50;
+
             return vertStreak;
           } else {
             vertStreak = [];
@@ -207,19 +203,18 @@ class Board {
         }
       }
       if (vertStreak.length >= 3) {
-        this.score += 50;
+
         return vertStreak;
       } else {
         vertStreak = [];
       }
     }
-
-    $(".player-score").text(this.score);
+    // return vertStreak;
   }
 
   horizontalCheck() {
     let horzStreak = [];
-    for (let j = 3; j < this.grid[0].length; j++) {
+    for (let j = 5; j < this.grid[0].length; j++) {
       for (let i = 0; i < this.grid.length; i++) {
         const streakLength = horzStreak.length;
         const currFruit = this.grid[i][j];
@@ -232,7 +227,7 @@ class Board {
           if (lastFruitType === currFruit.type) {
             horzStreak.push([i, j]);
           } else if (streakLength >= 3) {
-            this.score += 50;
+
             return horzStreak;
           } else {
             horzStreak = [];
@@ -240,41 +235,66 @@ class Board {
         }
       }
       if (horzStreak.length >= 3) {
-        this.score += 50;
 
         return horzStreak;
       } else {
         horzStreak = [];
       }
     }
-    $(".player-score").text(this.score);
+    // return horzStreak;
   }
 
   eliminateStreak(streak) {
-    debugger
+
     for (let i = 0; i < streak.length; i++) {
       const pos = streak[i]
       this.grid[pos[0]][pos[1]] = new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]([pos[0], pos[1]]);
     }
-    debugger
+
+    this.score += 50;
     this.shift();
   }
 
   shift() {
-    debugger
-    for (let i = 0; i < this.grid.length; i++) {
-      for (let j = 3; j < this.grid[i].length; j++) {
-        let column = this.grid[i];
-        let currentItem = this.grid[i][j];
 
-        if (currentItem.type === 'empty') {
-          for (let k = j; k - 1 >= 0; k--) {
-            const shiftingFruit = this.grid[i][k - 1];
-            shiftingFruit.falling = true;
-            shiftingFruit.lastYpos = [i, (k - 1)];
-            shiftingFruit.setPos([i, k]);
-            this.grid[i][k] = shiftingFruit;
+    for (let i = 0; i < this.grid.length; i++) {
+      for (let j = this.grid[i].length - 1; j >= 5; j--) {
+        const currentFruit = this.grid[i][j];
+
+        if (currentFruit.type === 'empty') {
+          for (let k = j - 1; k >= 0; k--) {
+            const nextFruit = this.grid[i][k];
+            if (nextFruit.type !== 'empty') {
+              this.swap([i, j], [i, k]);
+              nextFruit.falling = true;
+              break;
+            }
           }
+        }
+      }
+    }
+
+
+    this.addMoreFruit();
+
+  }
+
+  swap(pos1, pos2) {
+
+    const c1 = pos1[0], r1 = pos1[1], c2 = pos2[0], r2 = pos2[1];
+    const fruit1 = this.grid[c1][r1];
+    const fruit2 = this.grid[c2][r2];
+    this.grid[c2][r2] = fruit1;
+    this.grid[c1][r1] = fruit2;
+    fruit1.setPos([c2, r2]);
+    fruit2.setPos([c1, r1]);
+  }
+
+  addMoreFruit() {
+    for (let i = 0; i < this.grid.length; i++) {
+      for (let j = 0; j < 5; j++) {
+        if (this.grid[i][j].type === 'empty') {
+          this.grid[i][j] = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]([i, j]);
         }
       }
     }
@@ -287,7 +307,7 @@ class Board {
 
     let items = [];
     for(let i = 0; i < this.grid.length; i++) {
-      for(let j = 3; j < this.grid[i].length; j++) {
+      for(let j = 5; j < this.grid[i].length; j++) {
         let item = this.grid[i][j];
         item.draw(this.ctx);
 
@@ -350,6 +370,13 @@ class EmptySpace {
     this.falling = false;
     this.ypos = (pos[1] * 80);
     this.xpos = (pos[0] * 80);
+  }
+
+  setPos(pos) {
+    this.pos[0] = pos[0];
+    this.pos[1] = pos[1];
+    this.xpos = (pos[0] * 80);
+    this.ypos = (pos[1] * 80);
   }
 
   createImage() {
@@ -421,15 +448,16 @@ class Fruit {
     this.vel = 0;
     this.falling = false;
     this.xpos = pos[0] * 80;
-    this.ypos = (pos[1] - 3) * 80;
-    this.lastYpos = (pos[1] - 3) * 80;
+    this.ypos = (pos[1] - 5) * 80;
+    this.lastYpos = null;
     this.move = this.move.bind(this);
   }
 
   setPos(pos) {
+    this.lastYpos = (this.pos[1] - 5) * 80;
     this.pos = pos;
     this.xpos = pos[0] * 80;
-    this.ypos = (pos[1] - 3) * 80;
+    this.ypos = (pos[1] - 5) * 80;
   }
 
   createImage() {
@@ -451,12 +479,13 @@ class Fruit {
 
   move() {
     this.lastYpos += this.vel;
-    
+
     if (this.falling) {
       if (this.lastYpos === this.ypos) {
         this.vel = 0;
+        this.falling = false;
       } else {
-        this.vel = ((this.ypos - this.lastYpos) / 60);
+        this.vel = 2;
       }
     } else {
       this.vel = 0;
@@ -511,38 +540,38 @@ class Game {
   }
 
   getMove(e) {
-    let y = e.offsetX;
-    let x = e.offsetY;
+    let x = e.offsetX;
+    let y = e.offsetY;
 
     let pos = [];
-    if (y > 0 && y < 80) {
-      pos.push(0)
-    } else if (y >= 80 && y < 160) {
-      pos.push(1);
-    } else if (y >= 160 && y < 240) {
-      pos.push(2);
-    } else if (y >= 240 && y < 320) {
-      pos.push(3);
-    } else if (y >= 320 && y < 400) {
-      pos.push(4);
-    } else {
-      pos.push(5);
-    };
-
     if (x > 0 && x < 80) {
-      pos.push(3)
+      pos.push(0)
     } else if (x >= 80 && x < 160) {
-      pos.push(4);
+      pos.push(1);
     } else if (x >= 160 && x < 240) {
-      pos.push(5);
+      pos.push(2);
     } else if (x >= 240 && x < 320) {
-      pos.push(6);
+      pos.push(3);
     } else if (x >= 320 && x < 400) {
-      pos.push(7);
+      pos.push(4);
     } else {
-      pos.push(8);
+      pos.push(5);
     };
 
+    if (y > 0 && y < 80) {
+      pos.push(5)
+    } else if (y >= 80 && y < 160) {
+      pos.push(6);
+    } else if (y >= 160 && y < 240) {
+      pos.push(7);
+    } else if (y >= 240 && y < 320) {
+      pos.push(8);
+    } else if (y >= 320 && y < 400) {
+      pos.push(9);
+    } else {
+      pos.push(10);
+    };
+  
     return pos;
   }
 
