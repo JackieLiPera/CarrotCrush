@@ -103,16 +103,15 @@ __webpack_require__.r(__webpack_exports__);
 
 class Board {
   constructor(ctx) {
-    this.score = 0;
     this.grid = new Array(6);
     for (let i = 0; i < this.grid.length; i ++) {
       this.grid[i] = (new Array(11))
     }
+    this.score = 0;
     this.ctx = ctx;
     this.draw = this.draw.bind(this);
     this.falling = [];
     this.populate();
-    $('player-score').text(this.score);
   }
 
   populate() {
@@ -188,13 +187,12 @@ class Board {
       if (horzStreak) this.eliminateStreak(horzStreak);
       vertStreak = this.verticalCheck();
       horzStreak = this.horizontalCheck();
-      // debugger
     }
   }
 
   verticalCheck() {
     let vertStreak = [];
-    debugger
+
     for (let i = 0; i < this.grid.length; i++) {
       for (let j = 5; j < this.grid[0].length; j++) {
         const streakLength = vertStreak.length;
@@ -207,19 +205,22 @@ class Board {
           if (lastFruitType === currFruit.type) {
             vertStreak.push([i, j]);
           } else if (streakLength >= 3) {
+            this.score += 50;
             return vertStreak;
           } else {
             vertStreak = [currFruit.pos];
           }
         }
       }
-      debugger
+
       if (vertStreak.length >= 3) {
+        this.score += 50;
         return vertStreak;
       } else {
         vertStreak = [];
       }
     }
+
   }
 
   horizontalCheck() {
@@ -237,6 +238,7 @@ class Board {
           if (lastFruitType === currFruit.type) {
             horzStreak.push([i, j]);
           } else if (streakLength >= 3) {
+            this.score += 50;
             return horzStreak;
           } else {
             horzStreak = [currFruit.pos];
@@ -245,6 +247,7 @@ class Board {
       }
 
       if (horzStreak.length >= 3) {
+        this.score += 50;
         return horzStreak;
       } else {
         horzStreak = [];
@@ -253,13 +256,11 @@ class Board {
   }
 
   eliminateStreak(streak) {
-    debugger
     for (let i = 0; i < streak.length; i++) {
       const pos = streak[i]
       this.grid[pos[0]][pos[1]] = new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]([pos[0], pos[1]]);
     }
 
-    this.score += 50;
     this.shift();
   }
 
@@ -297,6 +298,7 @@ class Board {
   }
 
   draw() {
+    $(".player-score").text(`${this.score}`);
     this.ctx.clearRect(0, 0, this.ctx.height, this.ctx.width);
     requestAnimationFrame(this.draw);
 
@@ -507,6 +509,7 @@ class Game {
   start() {
     this.board.draw();
     this.movesLeft = 3;
+    this.board.score = 0;
     $(".moves-left").text(`${this.movesLeft}`);
   }
 
@@ -578,7 +581,6 @@ class Game {
 
   gameOver() {
     this.movesLeft = 0;
-    $(".moves-left").text(`${this.movesLeft}`);
 
     if (this.winner) {
       console.log('yerrr')
