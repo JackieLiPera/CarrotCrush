@@ -108,12 +108,11 @@ class Board {
     for (let i = 0; i < this.grid.length; i ++) {
       this.grid[i] = (new Array(11))
     }
-    this.populate();
     this.ctx = ctx;
-    this.shift = this.shift.bind(this);
     this.draw = this.draw.bind(this);
     this.falling = [];
-    $(".player-score").text(this.score);
+    this.populate();
+    $('player-score').text(this.score);
   }
 
   populate() {
@@ -124,7 +123,7 @@ class Board {
       }
     }
 
-    this.findAndRemoveStreaks();
+    this.findAndRemoveStreaks();  
   }
 
   isValidMove(fromMove, toMove) {
@@ -154,8 +153,9 @@ class Board {
   moveFruit(fromMove, toMove) {
     if (this.isValidMove(fromMove, toMove)) {
       this.swap(fromMove, toMove);
-
-      if (!this.findAndRemoveStreaks()) {
+      if (this.possibleStreak()) {
+        this.findAndRemoveStreaks();
+      } else {
         this.swap(fromMove, toMove);
       }
     } else {
@@ -163,26 +163,38 @@ class Board {
     }
   }
 
-  findAndRemoveStreaks() {
+  swap(pos1, pos2) {
+    const c1 = pos1[0], r1 = pos1[1], c2 = pos2[0], r2 = pos2[1];
+    const fruit1 = this.grid[c1][r1];
+    const fruit2 = this.grid[c2][r2];
+    this.grid[c2][r2] = fruit1;
+    this.grid[c1][r1] = fruit2;
+    fruit1.setPos([c2, r2]);
+    fruit2.setPos([c1, r1]);
+  }
 
-    let foundStreak = false;
+  possibleStreak() {
+    const vertStreak = this.verticalCheck();
+    const horzStreak = this.horizontalCheck();
+    return (vertStreak || horzStreak);
+  }
+
+  findAndRemoveStreaks() {
     let vertStreak = this.verticalCheck();
     let horzStreak = this.horizontalCheck();
 
     while (vertStreak || horzStreak) {
-
       if (vertStreak) this.eliminateStreak(vertStreak);
       if (horzStreak) this.eliminateStreak(horzStreak);
       vertStreak = this.verticalCheck();
       horzStreak = this.horizontalCheck();
-      foundStreak = true;
+      // debugger
     }
-
-    return foundStreak;
   }
 
   verticalCheck() {
     let vertStreak = [];
+    debugger
     for (let i = 0; i < this.grid.length; i++) {
       for (let j = 5; j < this.grid[0].length; j++) {
         const streakLength = vertStreak.length;
@@ -195,21 +207,19 @@ class Board {
           if (lastFruitType === currFruit.type) {
             vertStreak.push([i, j]);
           } else if (streakLength >= 3) {
-
             return vertStreak;
           } else {
-            vertStreak = [];
+            vertStreak = [currFruit.pos];
           }
         }
       }
+      debugger
       if (vertStreak.length >= 3) {
-
         return vertStreak;
       } else {
         vertStreak = [];
       }
     }
-    // return vertStreak;
   }
 
   horizontalCheck() {
@@ -227,25 +237,23 @@ class Board {
           if (lastFruitType === currFruit.type) {
             horzStreak.push([i, j]);
           } else if (streakLength >= 3) {
-
             return horzStreak;
           } else {
-            horzStreak = [];
+            horzStreak = [currFruit.pos];
           }
         }
       }
-      if (horzStreak.length >= 3) {
 
+      if (horzStreak.length >= 3) {
         return horzStreak;
       } else {
         horzStreak = [];
       }
     }
-    // return horzStreak;
   }
 
   eliminateStreak(streak) {
-
+    debugger
     for (let i = 0; i < streak.length; i++) {
       const pos = streak[i]
       this.grid[pos[0]][pos[1]] = new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]([pos[0], pos[1]]);
@@ -256,9 +264,9 @@ class Board {
   }
 
   shift() {
-
     for (let i = 0; i < this.grid.length; i++) {
-      for (let j = this.grid[i].length - 1; j >= 5; j--) {
+      for (let j = this.grid[i].length - 1; j > 0; j--) {
+
         const currentFruit = this.grid[i][j];
 
         if (currentFruit.type === 'empty') {
@@ -267,27 +275,15 @@ class Board {
             if (nextFruit.type !== 'empty') {
               this.swap([i, j], [i, k]);
               nextFruit.falling = true;
-              break;
+              k = -1;
             }
           }
         }
       }
+
     }
 
-
     this.addMoreFruit();
-
-  }
-
-  swap(pos1, pos2) {
-
-    const c1 = pos1[0], r1 = pos1[1], c2 = pos2[0], r2 = pos2[1];
-    const fruit1 = this.grid[c1][r1];
-    const fruit2 = this.grid[c2][r2];
-    this.grid[c2][r2] = fruit1;
-    this.grid[c1][r1] = fruit2;
-    fruit1.setPos([c2, r2]);
-    fruit2.setPos([c1, r1]);
   }
 
   addMoreFruit() {
@@ -300,7 +296,6 @@ class Board {
     }
   }
 
-
   draw() {
     this.ctx.clearRect(0, 0, this.ctx.height, this.ctx.width);
     requestAnimationFrame(this.draw);
@@ -310,12 +305,11 @@ class Board {
       for(let j = 5; j < this.grid[i].length; j++) {
         let item = this.grid[i][j];
         item.draw(this.ctx);
-
         items.push(item);
       }
     }
 
-    if (items.length >= 36) {
+    if (items.length === 36) {
       items.forEach ((item) => {
         item.move();
       });
@@ -393,18 +387,7 @@ class EmptySpace {
     ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
   }
 
-  move() {
-    // this.ypos += this.vel;
-    // if (this.falling) {
-    //   if (this.ypos === (this.pos[1] * 80)) {
-    //     this.vel = 0;
-    //   } else {
-    //     this.vel = (((this.pos[1] * 80) - this.ypos) / 60);
-    //   }
-    // } else {
-    //   this.vel = 0;
-    // }
-  }
+  move() {}
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (EmptySpace);
@@ -479,7 +462,6 @@ class Fruit {
 
   move() {
     this.lastYpos += this.vel;
-
     if (this.falling) {
       if (this.lastYpos === this.ypos) {
         this.vel = 0;
@@ -530,10 +512,13 @@ class Game {
   checkWon() {
     if (this.movesLeft > 0 && this.board.score >= this.objectiveScore ) {
       alert('yerr')
+      this.play();
     } else if (this.movesLeft === 0 && this.board.score !== this.objectiveScore) {
       alert('naa boi')
+      this.play();
     } else if (this.movesLeft === 0 && this.board.score === this.objectiveScore) {
       alert('yerr')
+      this.play();
     } else {
       return null;
     }
@@ -571,7 +556,7 @@ class Game {
     } else {
       pos.push(10);
     };
-  
+
     return pos;
   }
 
