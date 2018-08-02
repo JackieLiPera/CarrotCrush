@@ -95,6 +95,7 @@ h1 {
   float: right;
   margin-right: 70px;
   margin-top: 130px;
+  cursor: pointer;
 }
 
 .fa, .fas {
@@ -106,14 +107,52 @@ h1 {
   padding-top: 20px;
 }
 
-.rules-hidden {
-  visibility: hidden;
+.modal {
+  background: rgb(128,128,128, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.rules-not-hidden {
-  visibility: visible;
-  background: black;
-  z-index: 5;
-  width: 50px;
-  height: 50px;
+.modal-rules {
+  width: 50%;
+  padding-top: 60px;
+  padding-bottom: 80px;
+  padding-left: 20px;
+  padding-right: 20px;
+  background: #f7d0d6;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px 0 rgba(0,0,0,.50);
+  font-family: 'Raleway', sans-serif;
+  font-size: 20px;
+  text-align: center;
+  line-height: 30px;
+  box-sizing: border-box;
+}
+
+.rules-title {
+  font-family: 'Pacifico', cursive;
+  font-size: 40px;
+  color: #ff3755;
+}
+
+.modal-winner, .modal-loser {
+  width: 100%;
+  padding-top: 60px;
+  padding-bottom: 80px;
+  padding-left: 20px;
+  padding-right: 20px;
+  background: #f7d0d6;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px 0 rgba(0,0,0,.50);
+  font-family: 'Pacifico', cursive;
+  font-size: 60px;
+  text-align: center;
+  box-sizing: border-box;
+
 }

@@ -118,7 +118,7 @@ class Board {
     for (let i = 0; i < this.grid.length; i++) {
       for (let j = 0; j < this.grid[i].length; j++) {
         let pos = [i, j]
-        this.grid[i][j] = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]([i, j]);
+        this.grid[i][j] = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]([i, j], false);
       }
     }
 
@@ -168,8 +168,8 @@ class Board {
     const fruit2 = this.grid[c2][r2];
     this.grid[c2][r2] = fruit1;
     this.grid[c1][r1] = fruit2;
-    fruit1.setPos([c2, r2]);
-    fruit2.setPos([c1, r1]);
+    // fruit1.setPos([c2, r2]);
+    // fruit2.setPos([c1, r1]);
   }
 
   possibleStreak() {
@@ -205,7 +205,7 @@ class Board {
           if (lastFruitType === currFruit.type) {
             vertStreak.push([i, j]);
           } else if (streakLength >= 3) {
-            this.score += 50;
+            this.determinePoints(vertStreak);
             return vertStreak;
           } else {
             vertStreak = [currFruit.pos];
@@ -213,14 +213,14 @@ class Board {
         }
       }
 
+
       if (vertStreak.length >= 3) {
-        this.score += 50;
+        this.determinePoints(vertStreak);
         return vertStreak;
       } else {
         vertStreak = [];
       }
     }
-
   }
 
   horizontalCheck() {
@@ -238,7 +238,7 @@ class Board {
           if (lastFruitType === currFruit.type) {
             horzStreak.push([i, j]);
           } else if (streakLength >= 3) {
-            this.score += 50;
+            this.determinePoints(horzStreak);
             return horzStreak;
           } else {
             horzStreak = [currFruit.pos];
@@ -247,7 +247,7 @@ class Board {
       }
 
       if (horzStreak.length >= 3) {
-        this.score += 50;
+        this.determinePoints(horzStreak);
         return horzStreak;
       } else {
         horzStreak = [];
@@ -283,7 +283,7 @@ class Board {
       }
 
     }
-
+    
     this.addMoreFruit();
   }
 
@@ -291,8 +291,21 @@ class Board {
     for (let i = 0; i < this.grid.length; i++) {
       for (let j = 0; j < 5; j++) {
         if (this.grid[i][j].type === 'empty') {
-          this.grid[i][j] = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]([i, j]);
+          this.grid[i][j] = new _fruit__WEBPACK_IMPORTED_MODULE_0__["default"]([i, j], true);
+
         }
+      }
+    }
+  }
+
+  determinePoints(streak) {
+    for (let i = 0; i < streak.length; i++) {
+      const pos = streak[i];
+      const fruitType = this.grid[pos[0]][pos[1]].type;
+      if (fruitType === 'carrot') {
+        this.score += 100;
+      } else {
+        this.score += 50;
       }
     }
   }
@@ -425,11 +438,11 @@ const ICONS = {
 
 
 class Fruit {
-  constructor(pos) {
+  constructor(pos, falling) {
     this.type = DEFAULT.TYPE[Math.floor(Math.random() * DEFAULT.TYPE.length)];;
     this.pos = pos;
     this.vel = 0;
-    this.falling = false;
+    this.falling = falling;
     this.xpos = pos[0] * 80;
     this.ypos = (pos[1] - 5) * 80;
     this.lastYpos = null;
@@ -461,11 +474,11 @@ class Fruit {
   }
 
   move() {
-    this.lastYpos += this.vel;
+    this.ypos += this.vel;
     if (this.falling) {
-      if (this.lastYpos === this.ypos) {
-        this.vel = 0;
+      if (this.lastYpos + 80 <= this.ypos) {
         this.falling = false;
+        this.vel = 0;
       } else {
         this.vel = 2;
       }
@@ -494,23 +507,26 @@ __webpack_require__.r(__webpack_exports__);
 
 class Game {
   constructor(ctx) {
-    this.objectiveScore = 1000;
-    this.movesLeft = 3;
+    this.objectiveScore = 2000;
+    this.movesLeft = 5;
     this.board = new _board__WEBPACK_IMPORTED_MODULE_0__["default"](ctx);
     this.prevMove = null;
     this.winner = false;
-    this.rules = false;
     this.getMove = this.getMove.bind(this);
     this.handleMove = this.handleMove.bind(this);
     this.openRules = this.openRules.bind(this);
+    // this.winner = this.winner.bind(this);
+    // this.loser = this.loser.bind(this);
 
     $("#canvas").on('click', this.handleMove);
     $(".target-score").text(`Target: ${this.objectiveScore}`);
+    $(".modal").hide();
+    $(".rules-cog").on("click", this.openRules)
   }
 
   start() {
     this.board.draw();
-    this.movesLeft = 3;
+    this.movesLeft = 5;
     this.board.score = 0;
     $(".moves-left").text(`${this.movesLeft}`);
   }
@@ -585,16 +601,25 @@ class Game {
     this.movesLeft = 0;
 
     if (this.winner) {
-      console.log('yerrr')
+      this.winner();
       this.start();
     } else {
-      console.log('nerrr')
+      this.loser();
       this.start();
     }
   }
 
   openRules() {
-    $(".rules").addClass("rules-not-hidden");
+    $(".modal-rules").show();
+    $('.modal').show();
+  }
+
+  winner() {
+    $(".modal-winner").show();
+  }
+
+  loser() {
+    $(".modal-loser").show();
   }
 }
 
