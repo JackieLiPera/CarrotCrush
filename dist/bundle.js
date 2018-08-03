@@ -151,20 +151,23 @@ class Board {
 
   moveFruit(fromMove, toMove) {
     if (this.isValidMove(fromMove, toMove)) {
-      this.swap(fromMove, toMove);
-      if (this.possibleStreak()) {
-        window.setTimeout(this.findAndRemoveStreaks(), 8000);
-      } else {
         this.swap(fromMove, toMove);
-      }
+        setTimeout(() => {
+          debugger
+          if (this.possibleStreak()) {
+            this.findAndRemoveStreaks();
+          } else {
+            this.swap(toMove, fromMove);
+          }
+        }
+       , 1000)
     } else {
       const fruit1 = this.grid[fromMove[0]][fromMove[1]];
       const fruit2 = this.grid[toMove[0]][toMove[1]];
       fruit1.shaking = true;
       fruit2.shaking = true;
-      // $('#canvas').animate({
-      //   animation: shake .5;
-      // }, 3000);
+      setInterval(fruit1.shake(), 500);
+      setInterval(fruit2.shake(), 500);
     }
   }
 
@@ -174,8 +177,10 @@ class Board {
     const fruit2 = this.grid[c2][r2];
     this.grid[c2][r2] = fruit1;
     this.grid[c1][r1] = fruit2;
-    fruit1.setTempPos([c2, r2]);
-    fruit2.setTempPos([c1, r1]);
+    fruit1.setTempPos([c2, r2], c1, r1);
+    fruit2.setTempPos([c1, r1], c2, r2);
+    fruit1.swapping = true;
+    fruit2.swapping = true;
   }
 
   shifting(pos1, pos2) {
@@ -191,6 +196,7 @@ class Board {
   possibleStreak() {
     const vertStreak = this.verticalCheck();
     const horzStreak = this.horizontalCheck();
+    debugger
     return (vertStreak || horzStreak);
   }
 
@@ -343,6 +349,7 @@ class Board {
     if (items.length === 36) {
       items.forEach ((item) => {
         item.move();
+        item.shake();
       });
     }
   }
@@ -417,6 +424,7 @@ class EmptySpace {
   }
 
   move() {}
+  shake() {}
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (EmptySpace);
@@ -457,14 +465,18 @@ class Fruit {
   constructor(pos, falling) {
     this.type = DEFAULT.TYPE[Math.floor(Math.random() * DEFAULT.TYPE.length)];;
     this.pos = pos;
-    this.vel = 0;
+    this.yvel = 0;
+    this.xvel = 0;
     this.falling = falling;
+    this.shaking = false;
     this.xpos = pos[0] * 80;
     this.ypos = (pos[1] - 5) * 80;
-    this.lastYpos = null;
     this.nextYpos = null;
+    this.oldXpos = null;
+    this.oldYpos = null;
+    this.newXpos = null;
+    this.newYpos = null;
     this.move = this.move.bind(this);
-    this.shaking = false;
   }
 
   setNewPos(pos, oldY) {
@@ -472,10 +484,11 @@ class Fruit {
     this.nextYpos = ((pos[1] - 5) * 80);
   }
 
-  setTempPos(pos) {
-    this.pos = pos;
-    this.ypos = ((pos[1] - 5) * 80);
-    this.xpos = (pos[0] * 80);
+  setTempPos(pos, oldX, oldY) {
+    this.oldXpos = (oldX * 80);
+    this.oldYpos = ((oldY - 5) * 80);
+    this.newXpos = (pos[0] * 80);
+    this.newYpos = ((pos[1] - 5) * 80);
   }
 
   createImage() {
@@ -496,21 +509,69 @@ class Fruit {
   }
 
   move() {
-    this.ypos += this.vel;
+    this.ypos += this.yvel;
+    this.xpos += this.xvel;
+
     if (this.falling) {
       if (this.ypos >= this.nextYpos) {
         this.falling = false;
-        this.vel = 0;
+        this.yvel = 0;
       } else {
-        this.vel = 8;
+        this.yvel = ((this.nextYpos - this.ypos) / 60) * 10;
       }
     } else {
-      this.vel = 0;
+      this.yvel = 0;
     }
 
+    if (this.swapping) {
+      if (this.oldXpos > this.newXpos) {
+        this.xvel = -(80 / 60);
+        this.yvel = 0;
+
+        if(this.xpos <= this.newXpos) {
+          this.xvel = 0;
+          this.swapping = false;
+        }
+      } else if (this.oldXpos < this.newXpos) {
+        this.xvel = (80/60);
+        this.yvel = 0;
+
+        if(this.xpos >= this.newXpos) {
+          this.xvel = 0;
+          this.swapping = false;
+        }
+      } else {
+        this.xvel = 0;
+      }
+
+      if (this.oldYpos > this.newYpos) {
+        this.yvel = -(80 / 60);
+        this.xvel = 0;
+
+        if(this.ypos <= this.newYpos) {
+          this.yvel = 0;
+          this.swapping = false;
+        }
+      } else if (this.oldYpos < this.newYpos) {
+        this.yvel = (80/60);
+        this.xvel = 0;
+
+        if(this.ypos >= this.newYpos) {
+          this.yvel = 0;
+          this.swapping = false;
+        }
+      } else {
+        this.yvel = 0;
+      }
+
+    }
+  }
+
+  shake() {
     if (this.shaking) {
-      console.log('hi');
-      this.shaking = false; 
+      // const delta = Math.floor(Math.random() * 2);
+      // this.ypos += dy;
+      // this.xpos += dx;
     }
   }
 }
@@ -542,13 +603,17 @@ class Game {
     this.getMove = this.getMove.bind(this);
     this.handleMove = this.handleMove.bind(this);
     this.openRules = this.openRules.bind(this);
-    // this.winner = this.winner.bind(this);
-    // this.loser = this.loser.bind(this);
+    this.winner = this.won.bind(this);
+    this.loser = this.lost.bind(this);
+    this.start = this.start.bind(this);
 
     $("#canvas").on('click', this.handleMove);
     $(".target-score").text(`Target: ${this.objectiveScore}`);
-    $(".modal").hide();
-    $(".rules-cog").on("click", this.openRules)
+    $(".modal-rules").hide();
+    $(".modal-winner").hide();
+    $(".modal-loser").hide();
+    $('.modal').hide();
+    $(".rules-cog").on("click", this.openRules);
   }
 
   start() {
@@ -628,25 +693,35 @@ class Game {
     this.movesLeft = 0;
 
     if (this.winner) {
-      this.winner();
+      this.won();
       this.start();
     } else {
-      this.loser();
+      this.lost();
       this.start();
     }
   }
 
   openRules() {
+    // let rules = $('.modal').children()[0];
+    // $(rules).show();
     $(".modal-rules").show();
     $('.modal').show();
   }
 
-  winner() {
+  won() {
+    // let won = $('.modal').children()[1];
+    // $(won).show();
     $(".modal-winner").show();
+    $('.modal').show();
+    $('.modal').on("click", this.start);
   }
 
-  loser() {
-    $(".modal-loser").show();
+  lost() {
+    // let lost = $('.modal').children()[2];
+    // $(lost).show();
+    $('.modal-loser').show();
+    $('.modal').show();
+    $('.modal').on("click", this.start);
   }
 }
 
