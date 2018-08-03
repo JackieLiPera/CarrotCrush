@@ -153,12 +153,18 @@ class Board {
     if (this.isValidMove(fromMove, toMove)) {
       this.swap(fromMove, toMove);
       if (this.possibleStreak()) {
-        this.findAndRemoveStreaks();
+        window.setTimeout(this.findAndRemoveStreaks(), 8000);
       } else {
         this.swap(fromMove, toMove);
       }
     } else {
-        alert('Invalid move');
+      const fruit1 = this.grid[fromMove[0]][fromMove[1]];
+      const fruit2 = this.grid[toMove[0]][toMove[1]];
+      fruit1.shaking = true;
+      fruit2.shaking = true;
+      // $('#canvas').animate({
+      //   animation: shake .5;
+      // }, 3000);
     }
   }
 
@@ -168,8 +174,18 @@ class Board {
     const fruit2 = this.grid[c2][r2];
     this.grid[c2][r2] = fruit1;
     this.grid[c1][r1] = fruit2;
-    // fruit1.setPos([c2, r2]);
-    // fruit2.setPos([c1, r1]);
+    fruit1.setTempPos([c2, r2]);
+    fruit2.setTempPos([c1, r1]);
+  }
+
+  shifting(pos1, pos2) {
+    const c1 = pos1[0], r1 = pos1[1], c2 = pos2[0], r2 = pos2[1];
+    const fruit1 = this.grid[c1][r1];
+    const fruit2 = this.grid[c2][r2];
+    this.grid[c2][r2] = fruit1;
+    this.grid[c1][r1] = fruit2;
+    fruit1.setNewPos([c2, r2], r1);
+    fruit2.setNewPos([c1, r1], r2);
   }
 
   possibleStreak() {
@@ -274,7 +290,7 @@ class Board {
           for (let k = j - 1; k >= 0; k--) {
             const nextFruit = this.grid[i][k];
             if (nextFruit.type !== 'empty') {
-              this.swap([i, j], [i, k]);
+              this.shifting([i, j], [i, k]);
               nextFruit.falling = true;
               k = -1;
             }
@@ -283,7 +299,7 @@ class Board {
       }
 
     }
-    
+
     this.addMoreFruit();
   }
 
@@ -379,7 +395,7 @@ class EmptySpace {
     this.xpos = (pos[0] * 80);
   }
 
-  setPos(pos) {
+  setNewPos(pos) {
     this.pos[0] = pos[0];
     this.pos[1] = pos[1];
     this.xpos = (pos[0] * 80);
@@ -446,14 +462,20 @@ class Fruit {
     this.xpos = pos[0] * 80;
     this.ypos = (pos[1] - 5) * 80;
     this.lastYpos = null;
+    this.nextYpos = null;
     this.move = this.move.bind(this);
+    this.shaking = false;
   }
 
-  setPos(pos) {
-    this.lastYpos = (this.pos[1] - 5) * 80;
+  setNewPos(pos, oldY) {
     this.pos = pos;
-    this.xpos = pos[0] * 80;
-    this.ypos = (pos[1] - 5) * 80;
+    this.nextYpos = ((pos[1] - 5) * 80);
+  }
+
+  setTempPos(pos) {
+    this.pos = pos;
+    this.ypos = ((pos[1] - 5) * 80);
+    this.xpos = (pos[0] * 80);
   }
 
   createImage() {
@@ -476,14 +498,19 @@ class Fruit {
   move() {
     this.ypos += this.vel;
     if (this.falling) {
-      if (this.lastYpos + 80 <= this.ypos) {
+      if (this.ypos >= this.nextYpos) {
         this.falling = false;
         this.vel = 0;
       } else {
-        this.vel = 2;
+        this.vel = 8;
       }
     } else {
       this.vel = 0;
+    }
+
+    if (this.shaking) {
+      console.log('hi');
+      this.shaking = false; 
     }
   }
 }
