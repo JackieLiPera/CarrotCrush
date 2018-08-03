@@ -159,7 +159,7 @@ class Board {
             this.swap(toMove, fromMove);
           }
         }
-       , 1000)
+       , 500)
     } else {
       const fruit1 = this.grid[fromMove[0]][fromMove[1]];
       const fruit2 = this.grid[toMove[0]][toMove[1]];
@@ -522,7 +522,7 @@ class Fruit {
 
     if (this.swapping) {
       if (this.oldXpos > this.newXpos) {
-        this.xvel = -(80 / 60);
+        this.xvel = -(80 / 60) * 5;
         this.yvel = 0;
 
         if(this.xpos <= this.newXpos) {
@@ -530,7 +530,7 @@ class Fruit {
           this.swapping = false;
         }
       } else if (this.oldXpos < this.newXpos) {
-        this.xvel = (80/60);
+        this.xvel = (80/60) * 5;
         this.yvel = 0;
 
         if(this.xpos >= this.newXpos) {
@@ -542,7 +542,7 @@ class Fruit {
       }
 
       if (this.oldYpos > this.newYpos) {
-        this.yvel = -(80 / 60);
+        this.yvel = -(80 / 60) * 5;
         this.xvel = 0;
 
         if(this.ypos <= this.newYpos) {
@@ -550,7 +550,7 @@ class Fruit {
           this.swapping = false;
         }
       } else if (this.oldYpos < this.newYpos) {
-        this.yvel = (80/60);
+        this.yvel = (80/60) * 5;
         this.xvel = 0;
 
         if(this.ypos >= this.newYpos) {
