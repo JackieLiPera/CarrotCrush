@@ -153,7 +153,6 @@ class Board {
     if (this.isValidMove(fromMove, toMove)) {
         this.swap(fromMove, toMove);
         setTimeout(() => {
-          debugger
           if (this.possibleStreak()) {
             this.findAndRemoveStreaks();
           } else {
@@ -196,7 +195,6 @@ class Board {
   possibleStreak() {
     const vertStreak = this.verticalCheck();
     const horzStreak = this.horizontalCheck();
-    debugger
     return (vertStreak || horzStreak);
   }
 
@@ -354,7 +352,6 @@ class Board {
     }
   }
 }
-
 
 /* harmony default export */ __webpack_exports__["default"] = (Board);
 
@@ -609,9 +606,7 @@ class Game {
 
     $("#canvas").on('click', this.handleMove);
     $(".target-score").text(`Target: ${this.objectiveScore}`);
-    $(".modal-rules").hide();
-    $(".modal-winner").hide();
-    $(".modal-loser").hide();
+    $(".modal").on('click', () => $(".modal").hide());
     $('.modal').hide();
     $(".rules-cog").on("click", this.openRules);
   }
@@ -702,26 +697,24 @@ class Game {
   }
 
   openRules() {
-    // let rules = $('.modal').children()[0];
-    // $(rules).show();
-    $(".modal-rules").show();
     $('.modal').show();
+    $(".modal-rules").show();
+    $(".modal-winner").hide();
+    $(".modal-loser").hide();
   }
 
   won() {
-    // let won = $('.modal').children()[1];
-    // $(won).show();
-    $(".modal-winner").show();
     $('.modal').show();
-    $('.modal').on("click", this.start);
+    $(".modal-winner").show();
+    $(".modal-rules").hide();
+    $(".modal-loser").hide();
   }
 
   lost() {
-    // let lost = $('.modal').children()[2];
-    // $(lost).show();
-    $('.modal-loser').show();
     $('.modal').show();
-    $('.modal').on("click", this.start);
+    $(".modal-loser").show();
+    $(".modal-rules").hide();
+    $(".modal-winner").hide();
   }
 }
 
