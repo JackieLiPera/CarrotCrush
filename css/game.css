@@ -100,11 +100,13 @@ h1 {
 
 .fa, .fas {
   color: #f7d0d6;
-  width: 20px;
-  height: 20px;
-  text-align: center;
-  padding-left: 20px;
-  padding-top: 20px;
+  padding-left: 2px;
+}
+
+.fa-cog:before {
+    content: "\f013";
+    font-size: 2rem;
+    color: white;
 }
 
 .modal {
@@ -155,4 +157,8 @@ h1 {
   text-align: center;
   box-sizing: border-box;
   color: #ff3755;
+}
+
+html {
+  overflow: hidden;
 }
