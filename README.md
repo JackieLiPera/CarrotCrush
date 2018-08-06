@@ -16,7 +16,7 @@ See the live demo [here](https://jackielipera.github.io/CarrotCrush/)!
 # Wireframes
 This consists of a single page with game board and nav links to my Github, LinkedIn, AngelList and the rules modal.
 
-![](https://imgur.com/xXGdywE)
+![Imgur](https://i.imgur.com/xXGdywE.png)
 
 
 
