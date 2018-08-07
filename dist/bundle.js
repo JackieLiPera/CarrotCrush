@@ -107,7 +107,6 @@ class Board {
     for (let i = 0; i < this.grid.length; i ++) {
       this.grid[i] = (new Array(11))
     }
-    this.swappableMove = false;
     this.score = 0;
     this.ctx = ctx;
     this.draw = this.draw.bind(this);
@@ -157,7 +156,6 @@ class Board {
           if (this.possibleStreak()) {
             this.findAndRemoveStreaks();
           } else {
-            this.swappableMove = false;
             this.swap(toMove, fromMove);
           }
         }
@@ -275,7 +273,7 @@ class Board {
 
   eliminateStreak(streak) {
     this.determinePoints(streak);
-    
+
     for (let i = 0; i < streak.length; i++) {
       const pos = streak[i]
       this.grid[pos[0]][pos[1]] = new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]([pos[0], pos[1]]);
@@ -614,6 +612,7 @@ class Game {
 
   start() {
     this.board.draw();
+    this.board.populate();
     this.movesLeft = 5;
     this.board.score = 0;
     $(".moves-left").text(`${this.movesLeft}`);
@@ -635,7 +634,6 @@ class Game {
   }
 
   getMove(e) {
-    this.swappableMove = false;
     let x = e.offsetX;
     let y = e.offsetY;
 
@@ -676,11 +674,8 @@ class Game {
       let fromMove = this.prevMove;
       let toMove = this.getMove(e);
       this.board.moveFruit(fromMove, toMove);
-      debugger
-      if (this.board.swappableMove === true) {
-        this.movesLeft -= 1;
-      }
 
+      this.movesLeft -= 1;
       $(".moves-left").text(`${this.movesLeft}`);
       this.prevMove = false;
       this.checkWon();
