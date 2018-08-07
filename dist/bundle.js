@@ -107,6 +107,7 @@ class Board {
     for (let i = 0; i < this.grid.length; i ++) {
       this.grid[i] = (new Array(11))
     }
+    this.swappableMove = false;
     this.score = 0;
     this.ctx = ctx;
     this.draw = this.draw.bind(this);
@@ -156,6 +157,7 @@ class Board {
           if (this.possibleStreak()) {
             this.findAndRemoveStreaks();
           } else {
+            this.swappableMove = false;
             this.swap(toMove, fromMove);
           }
         }
@@ -225,7 +227,6 @@ class Board {
           if (lastFruitType === currFruit.type) {
             vertStreak.push([i, j]);
           } else if (streakLength >= 3) {
-            this.determinePoints(vertStreak);
             return vertStreak;
           } else {
             vertStreak = [currFruit.pos];
@@ -235,7 +236,6 @@ class Board {
 
 
       if (vertStreak.length >= 3) {
-        this.determinePoints(vertStreak);
         return vertStreak;
       } else {
         vertStreak = [];
@@ -258,7 +258,6 @@ class Board {
           if (lastFruitType === currFruit.type) {
             horzStreak.push([i, j]);
           } else if (streakLength >= 3) {
-            this.determinePoints(horzStreak);
             return horzStreak;
           } else {
             horzStreak = [currFruit.pos];
@@ -267,7 +266,6 @@ class Board {
       }
 
       if (horzStreak.length >= 3) {
-        this.determinePoints(horzStreak);
         return horzStreak;
       } else {
         horzStreak = [];
@@ -276,6 +274,8 @@ class Board {
   }
 
   eliminateStreak(streak) {
+    this.determinePoints(streak);
+    
     for (let i = 0; i < streak.length; i++) {
       const pos = streak[i]
       this.grid[pos[0]][pos[1]] = new _empty_space__WEBPACK_IMPORTED_MODULE_1__["default"]([pos[0], pos[1]]);
@@ -319,13 +319,14 @@ class Board {
   }
 
   determinePoints(streak) {
+    const firstPos = streak[0];
+    const fruitType = this.grid[firstPos[0]][firstPos[1]].type;
+
     for (let i = 0; i < streak.length; i++) {
-      const pos = streak[i];
-      const fruitType = this.grid[pos[0]][pos[1]].type;
       if (fruitType === 'carrot') {
-        this.score += 100;
+        this.score += 200;
       } else {
-        this.score += 50;
+        this.score += 100;
       }
     }
   }
@@ -592,7 +593,7 @@ __webpack_require__.r(__webpack_exports__);
 
 class Game {
   constructor(ctx) {
-    this.objectiveScore = 2000;
+    this.objectiveScore = 3000;
     this.movesLeft = 5;
     this.board = new _board__WEBPACK_IMPORTED_MODULE_0__["default"](ctx);
     this.prevMove = null;
@@ -600,8 +601,8 @@ class Game {
     this.getMove = this.getMove.bind(this);
     this.handleMove = this.handleMove.bind(this);
     this.openRules = this.openRules.bind(this);
-    this.winner = this.won.bind(this);
-    this.loser = this.lost.bind(this);
+    this.won = this.won.bind(this);
+    this.lost = this.lost.bind(this);
     this.start = this.start.bind(this);
 
     $("#canvas").on('click', this.handleMove);
@@ -623,7 +624,7 @@ class Game {
     if (this.movesLeft > 0 && this.board.score >= this.objectiveScore ) {
       this.winner = true;
       this.gameOver();
-    } else if (this.movesLeft === 0 && this.board.score !== this.objectiveScore) {
+    } else if (this.movesLeft === 0 && this.board.score < this.objectiveScore) {
       this.gameOver();
     } else if (this.movesLeft === 0 && this.board.score === this.objectiveScore) {
       this.winner = true;
@@ -634,6 +635,7 @@ class Game {
   }
 
   getMove(e) {
+    this.swappableMove = false;
     let x = e.offsetX;
     let y = e.offsetY;
 
@@ -673,9 +675,12 @@ class Game {
     if (this.prevMove) {
       let fromMove = this.prevMove;
       let toMove = this.getMove(e);
-
       this.board.moveFruit(fromMove, toMove);
-      this.movesLeft -= 1;
+      debugger
+      if (this.board.swappableMove === true) {
+        this.movesLeft -= 1;
+      }
+
       $(".moves-left").text(`${this.movesLeft}`);
       this.prevMove = false;
       this.checkWon();
@@ -689,10 +694,10 @@ class Game {
 
     if (this.winner) {
       this.won();
-      this.start();
+      $(".modal").on('click', this.start);
     } else {
       this.lost();
-      this.start();
+      $(".modal").on('click', this.start);
     }
   }
 
