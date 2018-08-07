@@ -107,6 +107,7 @@ class Board {
     for (let i = 0; i < this.grid.length; i ++) {
       this.grid[i] = (new Array(11))
     }
+    this.possibleMove = null;
     this.score = 0;
     this.ctx = ctx;
     this.draw = this.draw.bind(this);
@@ -195,7 +196,13 @@ class Board {
   possibleStreak() {
     const vertStreak = this.verticalCheck();
     const horzStreak = this.horizontalCheck();
-    return (vertStreak || horzStreak);
+    if (vertStreak || horzStreak) {
+      this.possibleMove = true;
+      return true
+    } else {
+      this.possibleMove = false;
+      return false;
+    }
   }
 
   findAndRemoveStreaks() {
@@ -634,6 +641,10 @@ class Game {
   }
 
   getMove(e) {
+    if (this.board.possibleMove === 'false') {
+      this.board.populate();
+    }
+    
     let x = e.offsetX;
     let y = e.offsetY;
 
