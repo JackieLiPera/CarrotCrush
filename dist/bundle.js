@@ -684,7 +684,12 @@ class Game {
       let fromMove = this.prevMove;
       let toMove = this.getMove(e);
       this.board.moveFruit(fromMove, toMove);
-      this.movesLeft -= 1;
+
+      if (this.board.isValidMove(fromMove, toMove)) {
+        this.movesLeft -= 1;
+      } else {
+        this.movesLeft += 0;
+      }
       $(".moves-left").text(`${this.movesLeft}`);
 
 
@@ -697,7 +702,7 @@ class Game {
 
   gameOver() {
     this.movesLeft = 0;
-    
+
     if (this.winner) {
       this.won();
       $(".modal").on('click', this.start);
