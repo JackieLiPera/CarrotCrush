@@ -597,7 +597,7 @@ __webpack_require__.r(__webpack_exports__);
 
 class Game {
   constructor(ctx) {
-    this.objectiveScore = 3000;
+    this.objectiveScore = 2500;
     this.movesLeft = 5;
     this.board = new _board__WEBPACK_IMPORTED_MODULE_0__["default"](ctx);
     this.prevMove = null;
