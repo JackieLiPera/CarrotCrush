@@ -165,8 +165,8 @@ class Board {
       const fruit2 = this.grid[toMove[0]][toMove[1]];
       fruit1.shaking = true;
       fruit2.shaking = true;
-      setInterval(fruit1.shake(), 500);
-      setInterval(fruit2.shake(), 500);
+      setInterval(fruit1.shake(this.ctx), 500);
+      setInterval(fruit2.shake(this.ctx), 500);
     }
   }
 
@@ -219,7 +219,6 @@ class Board {
     let vertStreak = [];
 
     for (let i = 0; i < this.grid.length; i++) {
-      debugger
       for (let j = 5; j < this.grid[0].length; j++) {
         const streakLength = vertStreak.length;
         const currFruit = this.grid[i][j];
@@ -352,7 +351,7 @@ class Board {
     if (items.length === 36) {
       items.forEach ((item) => {
         item.move();
-        item.shake();
+        item.shake(this.ctx);
       });
     }
   }
@@ -569,12 +568,12 @@ class Fruit {
     }
   }
 
-  shake() {
-    if (this.shaking) {
-      // const delta = Math.floor(Math.random() * 2);
-      // this.ypos += dy;
-      // this.xpos += dx;
-    }
+  shake(ctx) {
+    // if (this.shaking) {
+    //   const delta = Math.floor(Math.random() * 2);
+    //   this.ypos += delta;
+    //   this.xpos += delta;
+    // }
   }
 }
 
@@ -617,6 +616,7 @@ class Game {
   }
 
   start() {
+    this.winner = false;
     this.board.draw();
     this.board.populate();
     this.movesLeft = 5;
@@ -626,7 +626,7 @@ class Game {
 
 
   checkWon() {
-    if (this.movesLeft > 0 && this.board.score >= this.objectiveScore ) {
+    if (this.movesLeft >= 0 && this.board.score >= this.objectiveScore ) {
       this.winner = true;
       this.gameOver();
     } else if (this.movesLeft === 0 && this.board.score < this.objectiveScore) {
@@ -697,7 +697,7 @@ class Game {
 
   gameOver() {
     this.movesLeft = 0;
-
+    
     if (this.winner) {
       this.won();
       $(".modal").on('click', this.start);
