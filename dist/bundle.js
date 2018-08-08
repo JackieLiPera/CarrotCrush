@@ -107,7 +107,6 @@ class Board {
     for (let i = 0; i < this.grid.length; i ++) {
       this.grid[i] = (new Array(11))
     }
-    this.possibleMove = null;
     this.score = 0;
     this.ctx = ctx;
     this.draw = this.draw.bind(this);
@@ -200,7 +199,6 @@ class Board {
       this.possibleMove = true;
       return true
     } else {
-      this.possibleMove = false;
       return false;
     }
   }
@@ -221,6 +219,7 @@ class Board {
     let vertStreak = [];
 
     for (let i = 0; i < this.grid.length; i++) {
+      debugger
       for (let j = 5; j < this.grid[0].length; j++) {
         const streakLength = vertStreak.length;
         const currFruit = this.grid[i][j];
@@ -234,7 +233,7 @@ class Board {
           } else if (streakLength >= 3) {
             return vertStreak;
           } else {
-            vertStreak = [currFruit.pos];
+            vertStreak = [[i, j]];
           }
         }
       }
@@ -265,7 +264,7 @@ class Board {
           } else if (streakLength >= 3) {
             return horzStreak;
           } else {
-            horzStreak = [currFruit.pos];
+            horzStreak = [[i, j]];
           }
         }
       }
