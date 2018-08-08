@@ -518,7 +518,7 @@ class Fruit {
         this.falling = false;
         this.yvel = 0;
       } else {
-        this.yvel = ((this.nextYpos - this.ypos) / 60) * 10;
+        this.yvel = ((this.nextYpos - this.ypos) / 80) * 10;
       }
     } else {
       this.yvel = 0;
@@ -526,7 +526,7 @@ class Fruit {
 
     if (this.swapping) {
       if (this.oldXpos > this.newXpos) {
-        this.xvel = -(80 / 60) * 5;
+        this.xvel = Math.round(-(80 / 60) * 5);
         this.yvel = 0;
 
         if(this.xpos <= this.newXpos) {
@@ -534,7 +534,7 @@ class Fruit {
           this.swapping = false;
         }
       } else if (this.oldXpos < this.newXpos) {
-        this.xvel = (80/60) * 5;
+        this.xvel = Math.round((80/60) * 5);
         this.yvel = 0;
 
         if(this.xpos >= this.newXpos) {
@@ -613,6 +613,12 @@ class Game {
     $(".modal").on('click', () => $(".modal").hide());
     $('.modal').hide();
     $(".rules-cog").on("click", this.openRules);
+
+    if (!localStorage['highscore']) {
+      $('.highscore').text(`High score: ${0}`)
+    } else {
+      $('.highscore').text(`High score: ${localStorage['highscore']}`)
+    }
   }
 
   start() {
@@ -703,6 +709,17 @@ class Game {
   gameOver() {
     this.movesLeft = 0;
 
+    let highscore = localStorage.getItem("highscore");
+    if (!highscore) {
+      localStorage.setItem("highscore", this.board.score);
+    } else {
+      if (this.board.score > Number(highscore)) {
+        localStorage.setItem("highscore", this.board.score);
+      }
+    }
+    $('.highscore').text(`High score: ${localStorage['highscore']}`)
+
+    
     if (this.winner) {
       this.won();
       $(".modal").on('click', this.start);

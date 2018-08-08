@@ -2,10 +2,27 @@
   box-shadow: 0 3px 15px 0 rgba(0,0,0,.50);
 }
 
+body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  overflow: hidden;
+}
+
 .game-background {
   background-image: url('../images/background.png');
-  height: 1000px;
+  height: 1500px;
   background-size: cover;
+}
+
+.game-title {
+  font-family: 'Pacifico', cursive;
+  font-size: 20px;
+  color: #ff3755;
+  text-align: center;
+  margin: 0 auto;
 }
 
 .score-bar {
@@ -131,15 +148,17 @@ h1 {
   border-radius: 10px;
   box-shadow: 0 6px 18px 0 rgba(0,0,0,.50);
   font-family: 'Raleway', sans-serif;
-  font-size: 20px;
+  font-size: 30px;
   text-align: center;
   line-height: 30px;
   box-sizing: border-box;
+  color: black;
+  line-height: 40px;
 }
 
 .rules-title {
   font-family: 'Pacifico', cursive;
-  font-size: 40px;
+  font-size: 60px;
   color: #ff3755;
 }
 
@@ -159,6 +178,10 @@ h1 {
   color: #ff3755;
 }
 
-html {
-  overflow: hidden;
+.highscore {
+  font-family: 'Pacifico', cursive;
+  font-size: 40px;
+  color: #6a5ce5;
+  text-align: center;
+  margin: 0 auto;
 }
