@@ -102,11 +102,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class Board {
-  constructor(ctx) {
+  constructor(canvas, ctx) {
     this.grid = new Array(6);
     for (let i = 0; i < this.grid.length; i ++) {
       this.grid[i] = (new Array(11))
     }
+    this.canvas = canvas;
     this.score = 0;
     this.ctx = ctx;
     this.draw = this.draw.bind(this);
@@ -163,10 +164,10 @@ class Board {
     } else {
       const fruit1 = this.grid[fromMove[0]][fromMove[1]];
       const fruit2 = this.grid[toMove[0]][toMove[1]];
-      fruit1.shaking = true;
-      fruit2.shaking = true;
-      setInterval(fruit1.shake(this.ctx), 500);
-      setInterval(fruit2.shake(this.ctx), 500);
+      // fruit1.shaking = true;
+      // fruit2.shaking = true;
+      // setInterval(fruit1.shake(this.ctx), 500);
+      // setInterval(fruit2.shake(this.ctx), 500);
     }
   }
 
@@ -336,8 +337,7 @@ class Board {
 
   draw() {
     $(".player-score").text(`${this.score}`);
-    this.ctx.clearRect(0, 0, this.ctx.height, this.ctx.width);
-    requestAnimationFrame(this.draw);
+    this.ctx.clearRect(0, 0, this.canvas.height, this.canvas.width);
 
     let items = [];
     for(let i = 0; i < this.grid.length; i++) {
@@ -351,9 +351,10 @@ class Board {
     if (items.length === 36) {
       items.forEach ((item) => {
         item.move();
-        item.shake(this.ctx);
+        // item.shake(this.ctx);
       });
     }
+    requestAnimationFrame(this.draw);
   }
 }
 
@@ -378,7 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const canvasEl = document.getElementsByTagName("canvas")[0];
 
   const ctx = canvasEl.getContext("2d");
-  new _game__WEBPACK_IMPORTED_MODULE_0__["default"](ctx).start();
+  new _game__WEBPACK_IMPORTED_MODULE_0__["default"](canvasEl, ctx).start();
 });
 
 
@@ -504,7 +505,6 @@ class Fruit {
   draw(ctx) {
     let image = this.createImage();
     ctx.save();
-    ctx.clearRect(image.xpos, image.ypos, 80, 80);
     ctx.drawImage(image, image.xpos, image.ypos, 80, 80);
     ctx.restore();
   }
@@ -570,6 +570,7 @@ class Fruit {
 
   shake(ctx) {
     // if (this.shaking) {
+    //
     //   const delta = Math.floor(Math.random() * 2);
     //   this.ypos += delta;
     //   this.xpos += delta;
@@ -595,10 +596,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class Game {
-  constructor(ctx) {
+  constructor(canvas, ctx) {
     this.objectiveScore = 2500;
     this.movesLeft = 5;
-    this.board = new _board__WEBPACK_IMPORTED_MODULE_0__["default"](ctx);
+    this.board = new _board__WEBPACK_IMPORTED_MODULE_0__["default"](canvas, ctx);
     this.prevMove = null;
     this.winner = false;
     this.getMove = this.getMove.bind(this);
@@ -710,6 +711,7 @@ class Game {
     this.movesLeft = 0;
 
     let highscore = localStorage.getItem("highscore");
+
     if (!highscore) {
       localStorage.setItem("highscore", this.board.score);
     } else {
@@ -717,9 +719,8 @@ class Game {
         localStorage.setItem("highscore", this.board.score);
       }
     }
-    $('.highscore').text(`High score: ${localStorage['highscore']}`)
 
-    
+
     if (this.winner) {
       this.won();
       $(".modal").on('click', this.start);
